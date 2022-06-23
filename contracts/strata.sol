@@ -10,13 +10,9 @@ contract Strata{
     struct Unit{
         uint8 entitlement;
         Owner currentOwner;
+        Date ownerSince;
     }
 
-    struct Ownership{
-        Date sinceDate;        
-        Date untilDate;
-        StrataLotId strataLotId;
-    }
 
     struct Owner {
         string name;
@@ -28,7 +24,6 @@ contract Strata{
     enum ExpenseStatus {Approved, Rejected, Pending}
 
     struct ExpenseItem{
-        // uint expenseId;
         string description;
         uint256 amount;
         ExpenseStatus status;
@@ -45,7 +40,6 @@ contract Strata{
     }
 
     mapping(StrataLotId=>Unit) public units; 
-    mapping(uint=>Ownership) public ownerships;
     mapping(ExpenseId=>ExpenseItem) public expenses;
 
     address strataAccount;
@@ -55,6 +49,13 @@ contract Strata{
         ExpenseId expenseId,
         string description,
         uint256 amount
+    );
+
+    event OwnershipTransferred(
+       StrataLotId  strataLotId,
+       Date transferDate,
+       address fromAccount,
+       address toAccount
     );
 
     constructor() {
