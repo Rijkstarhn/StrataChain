@@ -11,7 +11,7 @@ contract Strata{
         bytes ownerPublicKey;
         uint sinceDate;        
         uint untilDate;
-        uint8 unitIdOwned;
+        uint8 strataLotIdOwned;
     }
 
     struct Owner {
@@ -35,7 +35,7 @@ contract Strata{
     }
 
     struct StrataFeeItem{
-        uint8 unitId;
+        uint8 strataLotId;
         uint paymentDate;
         uint256 paymentAmount;
         address fromAddress;
@@ -75,7 +75,7 @@ contract Strata{
     
 
     // vote
-    function vote(uint expenseId, bool yes, uint unitId, bytes memory signature) public {
+    function vote(uint expenseId, bool yes, uint strataLotId, bytes memory signature) public {
         // validate signature
 
         // update vote in ExpenseItem
@@ -108,7 +108,7 @@ contract Strata{
     }
 
     // collect strata fee from owner
-    function payStrataFee(uint8 unitId) public payable{
+    function payStrataFee(uint8 strataLotId) public payable{
         // verification
         
         // update balance
@@ -124,19 +124,19 @@ contract Strata{
     }
 
     // check if the strata fee is paid as of date.
-    function isStrataFeePaid(uint date, uint8 unitId)  public returns (bool) {
+    function isStrataFeePaid(uint date, uint8 strataLotId)  public returns (bool) {
         
     }
 
     // refund unused strata fee as of date
-    function refundUnusedStrataFee(uint8 unitId, uint date) private {
+    function refundUnusedStrataFee(uint8 strataLotId, uint date) private {
 
     }
 
     // owner transfer as of now
-    function transferOwner(uint8 unitId, string memory newOwnerName, bytes memory newOwnerPublicKey) public {
+    function transferOwner(uint8 strataLotId, string memory newOwnerName, bytes memory newOwnerPublicKey) public {
         // only allow current owner to transfer ownership
-        require(msg.sender == units[unitId].currentOwner.addr);
+        require(msg.sender == units[strataLotId].currentOwner.addr);
 
         // add new owner to owners table if owner's public key does not exist
         // update ownerships table to reflect the ownership change for both existing owner and 
