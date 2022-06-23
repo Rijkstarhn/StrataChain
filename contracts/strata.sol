@@ -1,25 +1,28 @@
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.15;
 //SPDX-License-Identifier: MIT
 
 contract Strata{
+
+    type StrataLotId is uint16;
+    type ExpenseId is uint;
+    type Date is uint;
+
     struct Unit{
         uint8 entitlement;
         Owner currentOwner;
     }
 
     struct Ownership{
-        bytes ownerPublicKey;
-        uint sinceDate;        
-        uint untilDate;
-        uint8 strataLotIdOwned;
+        Date sinceDate;        
+        Date untilDate;
+        StrataLotId strataLotId;
     }
 
     struct Owner {
         string name;
-        bytes publicKey;
-        uint256 maxAutoY;
-        uint256 minAutoN;
-        address addr;
+        uint256 autoApproveThreshold;
+        uint256 autoRejectThreshold;
+        address account;
     }
 
     enum ExpenseStatus {Approved, Rejected, Pending}
@@ -29,60 +32,58 @@ contract Strata{
         string description;
         uint256 amount;
         ExpenseStatus status;
-        uint8 yesVote;
-        uint8 noVote;
-        uint voteDeadlineDate;
+        uint8 approvalVoteCount;
+        uint8 rejectionVoteCount;
+        Date voteDeadline;
     }
 
     struct StrataFeeItem{
-        uint8 strataLotId;
+        StrataLotId strataLotId;
         uint paymentDate;
         uint256 paymentAmount;
-        address fromAddress;
+        address fromAccount;
     }
 
-    mapping(uint8=>Unit) public units; 
-    mapping(address=>Owner) public owners;
+    mapping(StrataLotId=>Unit) public units; 
     mapping(uint=>Ownership) public ownerships;
-    mapping(uint=>ExpenseItem) public expenses;
+    mapping(ExpenseId=>ExpenseItem) public expenses;
 
-    uint256 balance;
     address strataAccount;
     StrataFeeItem[] strataFeeSchedule;
 
-    event Vote(
-        uint expenseId,
+    event VoteStarted(
+        ExpenseId expenseId,
         string description,
         uint256 amount
     );
 
-    constructor(){
+    constructor() {
         strataAccount = msg.sender;
 
         // initially assume all units are owned by strata corp, call transferOwner to change ownership
     }
 
     // request withdrawal - returns the deadline date of vote
-    function requestWithdrawal(uint256 amount, string memory description) public returns (uint) {
+    function requestWithdrawal(uint256 amount, string memory description) public returns (Date) {
         // create entry in expenses 
 
         // emit Vote event
 
         // return date of deadline
-        return 0;
+        return Date.wrap(0);
     }
 
     
 
     // vote
-    function vote(uint expenseId, bool yes, uint strataLotId, bytes memory signature) public {
+    function voteOnExpense(ExpenseId expenseId, bool yes, StrataLotId strataLotId, bytes memory signature) public {
         // validate signature
 
         // update vote in ExpenseItem
     }
 
     // get latest expense status
-    function latestExpenseStatus (uint expenseId) public returns (ExpenseStatus) {
+    function getLatestExpenseStatus(ExpenseId expenseId) public returns (ExpenseStatus) {
         require(msg.sender == strataAccount);
 
         // count votes
@@ -98,28 +99,27 @@ contract Strata{
     }
 
     // withdraw money from expense
-    function withdraw(uint expenseId) public {
+    function withdraw(ExpenseId expenseId) public {
         // only strata corporation can withdraw
         require(msg.sender == strataAccount);
 
-        if (latestExpenseStatus(expenseId) == ExpenseStatus.Approved) {
+        if (getLatestExpenseStatus(expenseId) == ExpenseStatus.Approved) {
             // transfer expense amount out
         }
     }
 
     // collect strata fee from owner
-    function payStrataFee(uint8 strataLotId) public payable{
+    function payStrataFee(uint8 strataLotId) public payable {
         // verification
         
         // update balance
-        balance += msg.value;
 
         // update strataFeeSchedule
 
     }
 
     // get units with overdued payments 
-    function strataFeeOverdued(uint date) public returns (uint8[] memory) {
+    function getOverdueStrataFees(uint date) public returns (uint8[] memory) {
         // return 
     }
 
@@ -129,14 +129,14 @@ contract Strata{
     }
 
     // refund unused strata fee as of date
-    function refundUnusedStrataFee(uint8 strataLotId, uint date) private {
+    function refundUnusedStrataFee(StrataLotId strataLotId, Date date) private {
 
     }
 
     // owner transfer as of now
-    function transferOwner(uint8 strataLotId, string memory newOwnerName, bytes memory newOwnerPublicKey) public {
+    function transferOwner(StrataLotId strataLotId, string memory newOwnerName, bytes memory newOwnerPublicKey) public {
         // only allow current owner to transfer ownership
-        require(msg.sender == units[strataLotId].currentOwner.addr);
+        require(msg.sender == units[strataLotId].currentOwner.account);
 
         // add new owner to owners table if owner's public key does not exist
         // update ownerships table to reflect the ownership change for both existing owner and 
