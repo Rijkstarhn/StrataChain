@@ -129,7 +129,7 @@ contract Strata{
     }
 
     // refund unused strata fee as of date
-    function refundUnusedStrataFee(StrataLotId strataLotId, Date date) private {
+    function refundUnusedStrataFee(StrataLotId strataLotId) private {
 
     }
 
