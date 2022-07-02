@@ -71,7 +71,7 @@ contract Strata {
     mapping(ExpenseId => mapping(StrataLotId => bool)) expenseVoters;
 
     //This is necessary because apparently you cannot directly iterate through entries in a mapping.
-    StrataLotId[] strataLotIds;
+    StrataLotId[] public strataLotIds;
 
     address public strataAccount;
     uint256 public totalMonthlyStrataFee;
@@ -105,7 +105,7 @@ contract Strata {
             strataFeeBalance: 0
         });
 
-        units[StrataLotId.wrap(3)] = Unit({
+        units[StrataLotId.wrap(2)] = Unit({
             entitlement: 200,
             currentOwnership: Ownership({
                 owner: defaultOwner,
