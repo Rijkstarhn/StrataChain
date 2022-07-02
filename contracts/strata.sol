@@ -23,6 +23,7 @@ contract Strata {
     type Date is uint;
 
     struct Unit {
+        StrataLotId strataLotId;
         uint16 entitlement;
         Ownership currentOwnership;
         int256 strataFeeBalance;
@@ -78,6 +79,7 @@ contract Strata {
     uint16 totalEntitlement;
 
     uint expenseIdCounter;
+    
     constructor() {
         strataAccount = msg.sender;
         totalMonthlyStrataFee = 1000;
@@ -95,6 +97,7 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(1)] = Unit({
+            strataLotId: StrataLotId.wrap(1),
             entitlement: 100,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -106,6 +109,7 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(2)] = Unit({
+            strataLotId: StrataLotId.wrap(2),
             entitlement: 200,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -117,6 +121,7 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(3)] = Unit({
+            strataLotId: StrataLotId.wrap(3),
             entitlement: 300,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -283,16 +288,12 @@ contract Strata {
             });
         }
 
-        units[StrataLotId.wrap(3)] = Unit({
-            entitlement: 300,
-            currentOwnership: Ownership({
+        units[strataLotId].currentOwnership = Ownership({
                 owner: newOwner,
                 sinceDate: Date.wrap(block.timestamp),
                 paidStrataFees: 0,
                 paidExpenses: 0
-            }),
-            strataFeeBalance: 0
-        });
+            });
 
         owners[newOwnerAccount] = newOwner;
     }
