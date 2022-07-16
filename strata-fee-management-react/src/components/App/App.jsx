@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
+import { contract } from "../../web3Utils";
 
 import styles from "./App.module.css";
 
@@ -10,6 +12,8 @@ const App = () => {
 
 	const handleSignIn = (account) => {
 		setUserAccount(account);
+		contract.options = { ...contract.options, from: account };
+		console.log(contract);
 	};
 
 	const isSignedIn = userAccount !== null;
