@@ -9,6 +9,31 @@
 		"inputs": [
 			{
 				"indexed": false,
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "StrataFeePaid",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [],
+		"name": "StrataFeesCollected",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
 				"internalType": "Strata.ExpenseId",
 				"name": "expenseId",
 				"type": "uint256"
@@ -233,11 +258,6 @@
 		],
 		"name": "units",
 		"outputs": [
-			{
-				"internalType": "Strata.StrataLotId",
-				"name": "strataLotId",
-				"type": "uint16"
-			},
 			{
 				"internalType": "uint16",
 				"name": "entitlement",

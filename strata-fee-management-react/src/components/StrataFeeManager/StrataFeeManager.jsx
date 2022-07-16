@@ -5,7 +5,7 @@ import styles from "./StrataFeeManager.module.css";
 
 import { detectCurrentProvider } from "../../web3Utils";
 
-const contractAddress = "0xc902D8b1E9b0d78A97D0fa6dF4eC29D765a66cE5";
+const contractAddress = "0xf16c2a910506DeE5cc5FcD058768aB8a597AffBa";
 const contractAbi = require("../../contract.json");
 
 let web3;
@@ -17,8 +17,9 @@ const StrataFeeManager = ({ account }) => {
 	const [accountBalance, setAccountBalance] = useState(0);
 	const [autoApproveThreshold, setAutoApproveThreshold] = useState(0);
 	const [autoRejectThreshold, setAutoRejectThreshold] = useState(0);
-	const [units, setUnits] = useState([]);
+	const [units, setUnits] = useState({});
 	const [transferOwnerAddresses, setTransferOwnerAddresses] = useState({});
+	const [strataFeePaymentAmount, setStrataFeePaymentAmount] = useState({});
 
 	useEffect(() => {
 		(async () => {
@@ -43,7 +44,10 @@ const StrataFeeManager = ({ account }) => {
 					setStrataAccount(await contract.methods.strataAccount().call());
 
 					setTotalMonthlyStrataFee(
-						await contract.methods.totalMonthlyStrataFee().call()
+						web3.utils.fromWei(
+							await contract.methods.totalMonthlyStrataFee().call(),
+							"ether"
+						)
 					);
 
 					let owner = await contract.methods.owners(account).call();
@@ -54,22 +58,56 @@ const StrataFeeManager = ({ account }) => {
 						web3.utils.fromWei(owner.autoRejectThreshold, "ether")
 					);
 
-					let units = [];
-					for (let i = 0; i < 3; ++i) {
-						let strataLotId = await contract.methods.strataLotIds(i).call();
-						units = [
-							...units,
-							await contract.methods.units(strataLotId).call()
-						];
-					}
+					const refreshUnits = async () => {
+						let units = {};
+						for (let i = 0; i < 3; ++i) {
+							let strataLotId = await contract.methods.strataLotIds(i).call();
+							units = {
+								...units,
+								[strataLotId]: await contract.methods.units(strataLotId).call()
+							};
+						}
 
-					setUnits(units);
+						setUnits(units);
+					};
+
+					await refreshUnits();
+
+					//Subscribe to events
+					contract.events.StrataFeesCollected().on("data", async () => {
+						await refreshUnits();
+					});
+
+					contract.events.StrataFeePaid().on("data", async (event) => {
+						const { strataLotId } = event.returnValues;
+						const updatedUnit = await contract.methods
+							.units(strataLotId)
+							.call();
+						setUnits((prevUnits) => ({
+							...prevUnits,
+							[strataLotId]: updatedUnit
+						}));
+						console.log(event);
+					});
 				}
 			} catch (err) {
 				console.log(err);
 			}
 		})();
 	}, [account]);
+
+	const handleCollectStrataFees = async () => {
+		await contract.methods.collectStrataFeePayments().send();
+	};
+
+	const handlePayStrataFee = async (strataLotId, amount) => {
+		const weiToSend = web3.utils.toWei(amount, "ether");
+		console.log(weiToSend);
+		console.log(contract.methods);
+		await contract.methods
+			.payStrataFee(strataLotId)
+			.send({ from: account, value: weiToSend });
+	};
 
 	const handleTransferOwner = async (strataLotId, newOwnerAccount) => {
 		await contract.methods.transferOwner(strataLotId, newOwnerAccount).send();
@@ -78,7 +116,7 @@ const StrataFeeManager = ({ account }) => {
 	const isUsingStrataAccount = account === strataAccount;
 
 	return (
-		<div>
+		<div className={styles.container}>
 			<div>
 				<h1>Strata Fee Manager</h1>
 			</div>
@@ -89,8 +127,11 @@ const StrataFeeManager = ({ account }) => {
 					could use it to provide a UI for things that the strata needs to do
 					<div className={styles.dataField}>
 						<span className={styles.label}>Total Monthly Strata Fee: </span>
-						{totalMonthlyStrataFee}
+						{totalMonthlyStrataFee} ETH
 					</div>
+					<button onClick={() => handleCollectStrataFees()}>
+						Collect Strata Fees
+					</button>
 				</div>
 			)}
 			<div>
@@ -121,55 +162,84 @@ const StrataFeeManager = ({ account }) => {
 			</div>
 			<div>
 				<h2>Owned Units</h2>
-				{units
-					.filter((unit) => unit.currentOwnership.owner.account === account)
-					.map((unit) => (
-						<div key={unit.strataLotId} className={styles.unitContainer}>
-							<div className={styles.dataField}>
-								<span className={styles.label}>Lot ID: </span>
-								{unit.strataLotId}
+				{Object.keys(units)
+					.filter(
+						(strataLotId) =>
+							units[strataLotId].currentOwnership.owner.account === account
+					)
+					.map((strataLotId) => {
+						const unit = units[strataLotId];
+						return (
+							<div key={strataLotId} className={styles.unitContainer}>
+								<div className={styles.dataField}>
+									<span className={styles.label}>Lot ID: </span>
+									{strataLotId}
+								</div>
+								<div className={styles.dataField}>
+									<span className={styles.label}>Current Owner: </span>
+									{unit.currentOwnership.owner.account}
+								</div>
+								<div className={styles.dataField}>
+									<span className={styles.label}>Entitlement: </span>
+									{unit.entitlement}
+								</div>
+								<div className={styles.dataField}>
+									<span className={styles.label}>Monthly Strata Fee: </span>
+									{(unit.entitlement / 600) * totalMonthlyStrataFee} ETH
+								</div>
+								<div className={styles.dataField}>
+									<span className={styles.label}>Balance Owed: </span>
+									{web3.utils.fromWei(unit.strataFeeBalance, "ether")} ETH
+								</div>
+
+								<div className={styles.dataField}>
+									<button
+										onClick={() =>
+											handlePayStrataFee(
+												strataLotId,
+												strataFeePaymentAmount[strataLotId]
+											)
+										}
+									>
+										Pay Strata Fee
+									</button>
+									<input
+										id={`pay-strata-fee-${strataLotId}`}
+										type="number"
+										onChange={(e) => {
+											setStrataFeePaymentAmount({
+												...transferOwnerAddresses,
+												[strataLotId]: e.target.value
+											});
+										}}
+									/>
+								</div>
+
+								<div className={styles.dataField}>
+									<button
+										onClick={() =>
+											handleTransferOwner(
+												strataLotId,
+												transferOwnerAddresses[strataLotId]
+											)
+										}
+									>
+										Transfer Owner
+									</button>
+									<input
+										id={`transfer-owner-${unit.strataLotId}`}
+										type="text"
+										onChange={(e) => {
+											setTransferOwnerAddresses({
+												...transferOwnerAddresses,
+												[strataLotId]: e.target.value
+											});
+										}}
+									/>
+								</div>
 							</div>
-							<div className={styles.dataField}>
-								<span className={styles.label}>Current Owner: </span>
-								{unit.currentOwnership.owner.account}
-							</div>
-							<div className={styles.dataField}>
-								<span className={styles.label}>Entitlement: </span>
-								{unit.entitlement}
-							</div>
-							<div className={styles.dataField}>
-								<span className={styles.label}>Monthly Strata Fee: </span>
-								TODO: Calculate from entitlement percentage and
-								totalMonthlyStrataFee
-							</div>
-							<div className={styles.dataField}>
-								<span className={styles.label}>Balance Owed: </span>
-								{web3.utils.fromWei(unit.strataFeeBalance, "ether")} ETH
-							</div>
-							<div className={styles.dataField}>
-								<button
-									onClick={() =>
-										handleTransferOwner(
-											unit.strataLotId,
-											transferOwnerAddresses[unit.strataLotId]
-										)
-									}
-								>
-									Transfer Owner
-								</button>
-								<input
-									id={`transfer-owner-${unit.strataLotId}`}
-									type="text"
-									onChange={(e) => {
-										setTransferOwnerAddresses({
-											...transferOwnerAddresses,
-											[unit.strataLotId]: e.target.value
-										});
-									}}
-								/>
-							</div>
-						</div>
-					))}
+						);
+					})}
 			</div>
 		</div>
 	);
