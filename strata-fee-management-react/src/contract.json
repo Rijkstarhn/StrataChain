@@ -1,0 +1,341 @@
+[
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "Strata.ExpenseId",
+				"name": "expenseId",
+				"type": "uint256"
+			}
+		],
+		"name": "VoteStarted",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "collectStrataFeePayments",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.ExpenseId",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "expenses",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "enum Strata.ExpenseStatus",
+				"name": "status",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "approvalVoteCount",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "rejectionVoteCount",
+				"type": "uint8"
+			},
+			{
+				"internalType": "Strata.Date",
+				"name": "voteDeadline",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "owners",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "autoApproveThreshold",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "autoRejectThreshold",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			}
+		],
+		"name": "payStrataFee",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			}
+		],
+		"name": "requestWithdrawal",
+		"outputs": [
+			{
+				"internalType": "Strata.Date",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "setAutoApproveThreshold",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "setAutoRejectThreshold",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "strataAccount",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "strataLotIds",
+		"outputs": [
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "",
+				"type": "uint16"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalMonthlyStrataFee",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			},
+			{
+				"internalType": "address",
+				"name": "newOwnerAccount",
+				"type": "address"
+			}
+		],
+		"name": "transferOwner",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "",
+				"type": "uint16"
+			}
+		],
+		"name": "units",
+		"outputs": [
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			},
+			{
+				"internalType": "uint16",
+				"name": "entitlement",
+				"type": "uint16"
+			},
+			{
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "uint256",
+								"name": "autoApproveThreshold",
+								"type": "uint256"
+							},
+							{
+								"internalType": "uint256",
+								"name": "autoRejectThreshold",
+								"type": "uint256"
+							},
+							{
+								"internalType": "address",
+								"name": "account",
+								"type": "address"
+							}
+						],
+						"internalType": "struct Strata.Owner",
+						"name": "owner",
+						"type": "tuple"
+					},
+					{
+						"internalType": "Strata.Date",
+						"name": "sinceDate",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "paidStrataFees",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "paidExpenses",
+						"type": "uint256"
+					}
+				],
+				"internalType": "struct Strata.Ownership",
+				"name": "currentOwnership",
+				"type": "tuple"
+			},
+			{
+				"internalType": "int256",
+				"name": "strataFeeBalance",
+				"type": "int256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.ExpenseId",
+				"name": "expenseId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "supportsExpense",
+				"type": "bool"
+			},
+			{
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			}
+		],
+		"name": "voteOnExpense",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.ExpenseId",
+				"name": "expenseId",
+				"type": "uint256"
+			}
+		],
+		"name": "withdraw",
+		"outputs": [
+			{
+				"internalType": "enum Strata.ExpenseStatus",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
