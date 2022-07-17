@@ -34,8 +34,8 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"internalType": "Strata.ExpenseId",
-				"name": "expenseId",
+				"internalType": "Strata.RequestId",
+				"name": "requestId",
 				"type": "uint256"
 			}
 		],
@@ -47,50 +47,6 @@
 		"name": "collectStrataFeePayments",
 		"outputs": [],
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "Strata.ExpenseId",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "expenses",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "description",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum Strata.ExpenseStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "uint8",
-				"name": "approvalVoteCount",
-				"type": "uint8"
-			},
-			{
-				"internalType": "uint8",
-				"name": "rejectionVoteCount",
-				"type": "uint8"
-			},
-			{
-				"internalType": "Strata.Date",
-				"name": "voteDeadline",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -117,6 +73,11 @@
 				"internalType": "address",
 				"name": "account",
 				"type": "address"
+			},
+			{
+				"internalType": "uint16",
+				"name": "ownedUnitsCount",
+				"type": "uint16"
 			}
 		],
 		"stateMutability": "view",
@@ -157,6 +118,55 @@
 			}
 		],
 		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "Strata.RequestId",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requests",
+		"outputs": [
+			{
+				"internalType": "enum Strata.RequestType",
+				"name": "requestType",
+				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "enum Strata.RequestStatus",
+				"name": "status",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "approvalVoteCount",
+				"type": "uint8"
+			},
+			{
+				"internalType": "uint8",
+				"name": "rejectionVoteCount",
+				"type": "uint8"
+			},
+			{
+				"internalType": "Strata.Date",
+				"name": "voteDeadline",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -281,6 +291,11 @@
 								"internalType": "address",
 								"name": "account",
 								"type": "address"
+							},
+							{
+								"internalType": "uint16",
+								"name": "ownedUnitsCount",
+								"type": "uint16"
 							}
 						],
 						"internalType": "struct Strata.Owner",
@@ -319,13 +334,13 @@
 	{
 		"inputs": [
 			{
-				"internalType": "Strata.ExpenseId",
-				"name": "expenseId",
+				"internalType": "Strata.RequestId",
+				"name": "requestId",
 				"type": "uint256"
 			},
 			{
 				"internalType": "bool",
-				"name": "supportsExpense",
+				"name": "supportsRequest",
 				"type": "bool"
 			},
 			{
@@ -334,7 +349,7 @@
 				"type": "uint16"
 			}
 		],
-		"name": "voteOnExpense",
+		"name": "voteOnRequest",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -342,15 +357,15 @@
 	{
 		"inputs": [
 			{
-				"internalType": "Strata.ExpenseId",
-				"name": "expenseId",
+				"internalType": "Strata.RequestId",
+				"name": "requestId",
 				"type": "uint256"
 			}
 		],
 		"name": "withdraw",
 		"outputs": [
 			{
-				"internalType": "enum Strata.ExpenseStatus",
+				"internalType": "enum Strata.RequestStatus",
 				"name": "",
 				"type": "uint8"
 			}
