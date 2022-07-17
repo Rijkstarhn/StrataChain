@@ -37,13 +37,15 @@ export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
 				<form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
 					{children}
 
-					<Button type="reset" onClick={handleOnClose}>
-						Cancel
-					</Button>
+					<div className={styles.buttonContainer}>
+						<Button type="reset" onClick={handleOnClose}>
+							Cancel
+						</Button>
 
-					<Button type="submit" disabled={!formState.isValid}>
-						Submit
-					</Button>
+						<Button type="submit" disabled={!formState.isValid}>
+							Submit
+						</Button>
+					</div>
 				</form>
 			</DialogContent>
 		</Dialog>
