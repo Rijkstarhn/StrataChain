@@ -7,12 +7,17 @@ import { contract, sendTransaction } from "../../web3Utils";
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import OutlinedInput from "@mui/material/OutlinedInput";
 import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
 
 import { TransactionInProgressContext } from "../App/App";
 
 const StrataCorporation = ({ totalMonthlyStrataFee }) => {
 	const [isRequestExpenseOpen, setRequestExpenseOpen] = useState(false);
+	const [isRequestStrataFeeChangeOpen, setRequestStrataFeeChangeOpen] =
+		useState(false);
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleCollectStrataFees = async () => {
@@ -20,6 +25,14 @@ const StrataCorporation = ({ totalMonthlyStrataFee }) => {
 			contract.methods.collectStrataFeePayments(),
 			setTransactionInProgress
 		);
+	};
+
+	const handleExpenseRequest = () => {
+		console.log("expense request sent");
+	};
+
+	const handleStrataFeeChangeRequest = () => {
+		console.log("strata fee change request sent");
 	};
 
 	return (
@@ -38,22 +51,61 @@ const StrataCorporation = ({ totalMonthlyStrataFee }) => {
 				<Button onClick={() => setRequestExpenseOpen(true)}>
 					Request Expense
 				</Button>
+				<Button onClick={() => setRequestStrataFeeChangeOpen(true)}>
+					Request Strata Fee Change
+				</Button>
 			</Container>
+
 			<Dialog
 				open={isRequestExpenseOpen}
 				onClose={() => setRequestExpenseOpen(false)}
 			>
-				<Container>
-					<span>Amount</span>
-					<TextField
-						id="expense-request-amount"
-						type="number"
-						onChange={(e) => {
-							// setStrataFeePaymentAmount(e.target.value);
-						}}
-					/>
-					ETH
-				</Container>
+				<DialogTitle>Expense Request Details</DialogTitle>
+				<DialogContent>
+					<form className={styles.form} onSubmit={handleExpenseRequest}>
+						<span>Amount</span>
+						<OutlinedInput
+							id="expense-request-amount"
+							type="number"
+							onChange={(e) => {
+								// setStrataFeePaymentAmount(e.target.value);
+							}}
+						/>
+						<span>Reason</span>
+						<TextField
+							id="expense-request-reason"
+							type="text"
+							onChange={(e) => {}}
+						/>
+						<Button type="submit">Submit</Button>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog
+				open={isRequestStrataFeeChangeOpen}
+				onClose={() => setRequestStrataFeeChangeOpen(false)}
+			>
+				<DialogTitle>Strata Fee Change Request Details</DialogTitle>
+				<DialogContent>
+					<form className={styles.form} onSubmit={handleStrataFeeChangeRequest}>
+						<span>Amount</span>
+						<OutlinedInput
+							id="strata-fee-change-request-amount"
+							type="number"
+							onChange={(e) => {
+								// setStrataFeePaymentAmount(e.target.value);
+							}}
+						/>
+						<span>Reason</span>
+						<TextField
+							id="strata-fee-change-request-reason"
+							type="text"
+							onChange={(e) => {}}
+						/>
+						<Button type="submit">Submit</Button>
+					</form>
+				</DialogContent>
 			</Dialog>
 		</>
 	);

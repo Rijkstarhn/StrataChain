@@ -81,10 +81,7 @@ const StrataFeeManager = ({ account }) => {
 	const isUsingStrataAccount = account === strataAccount;
 
 	return (
-		<Container>
-			<div>
-				<h1>Strata Fee Manager</h1>
-			</div>
+		<>
 			{isUsingStrataAccount && (
 				<>
 					<StrataCorproation totalMonthlyStrataFee={totalMonthlyStrataFee} />
@@ -137,7 +134,7 @@ const StrataFeeManager = ({ account }) => {
 						);
 					})}
 			</Container>
-		</Container>
+		</>
 	);
 };
 

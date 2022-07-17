@@ -5,10 +5,14 @@ import styles from "./StrataLot.module.css";
 import { web3, contract, sendTransaction } from "../../web3Utils";
 
 import Container from "@mui/material/Container";
+import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import InputLabel from "@mui/material/InputLabel";
 
 import { TransactionInProgressContext } from "../App/App";
+
+const placeholderAddress = "0xaaaaaaabbbbbbbcccccccdddddddeeeeeeefffffff";
 
 const StrataLot = ({
 	lotId,
@@ -38,7 +42,7 @@ const StrataLot = ({
 	};
 
 	return (
-		<Container>
+		<div className={styles.unitContainer}>
 			<div className={styles.dataField}>
 				<span className={styles.label}>Lot ID: </span>
 				{lotId}
@@ -64,9 +68,10 @@ const StrataLot = ({
 				<Button onClick={() => handlePayStrataFee(strataFeePaymentAmount)}>
 					Pay Strata Fee
 				</Button>
-				<TextField
+				<OutlinedInput
 					id={`pay-strata-fee-${lotId}`}
 					type="number"
+					value={strataFeePaymentAmount}
 					onChange={(e) => {
 						setStrataFeePaymentAmount(e.target.value);
 					}}
@@ -77,7 +82,8 @@ const StrataLot = ({
 				<Button onClick={() => handleTransferOwner(transferOwnerAddress)}>
 					Transfer Owner
 				</Button>
-				<TextField
+				<OutlinedInput
+					placeholder={placeholderAddress}
 					id={`transfer-owner-${lotId}`}
 					type="text"
 					onChange={(e) => {
@@ -85,7 +91,7 @@ const StrataLot = ({
 					}}
 				/>
 			</div>
-		</Container>
+		</div>
 	);
 };
 
