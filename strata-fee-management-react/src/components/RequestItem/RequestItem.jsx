@@ -4,17 +4,20 @@ import styles from "./RequestItem.module.css";
 
 import { web3, contract, sendTransaction } from "../../web3Utils";
 
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
+import Typography from "@mui/material/Typography";
 
 import { TransactionInProgressContext } from "../App/App";
 import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
 import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
 
-const RequestItem = ({ requestId, requestType, amount, reason }) => {
+const RequestItem = ({
+	requestId,
+	requestType,
+	requestStatus,
+	amount,
+	reason
+}) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
@@ -38,20 +41,24 @@ const RequestItem = ({ requestId, requestType, amount, reason }) => {
 	return (
 		<div className={styles.unitContainer}>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Request ID: </span>
-				{requestId}
+				<Typography className={styles.label}>Request ID:</Typography>
+				<Typography className={styles.value}>{requestId}</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Request Type: </span>
-				{requestType}
+				<Typography className={styles.label}>Type:</Typography>
+				<Typography className={styles.value}>{requestType}</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Amount: </span>
-				{amount}
+				<Typography className={styles.label}>Status:</Typography>
+				<Typography className={styles.value}>{requestStatus}</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Reason: </span>
-				{reason}
+				<Typography className={styles.label}>Amount:</Typography>
+				<Typography className={styles.value}>{amount}</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>Reason:</Typography>
+				<Typography className={styles.value}>{reason}</Typography>
 			</div>
 
 			<div className={styles.dataField}>

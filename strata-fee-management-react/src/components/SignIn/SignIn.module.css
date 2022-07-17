@@ -1,1 +1,27 @@
+.header {
+	font-size: 24pt;
+}
 
+.subHeader {
+	font-size: 18pt;
+}
+
+.body,
+.label,
+.value {
+	font-size: 12pt;
+}
+
+.label {
+	font-weight: bold;
+	margin-right: 5px;
+}
+
+.unitContainer {
+	margin-bottom: 20px;
+}
+
+.dataField {
+	display: flex;
+	margin-bottom: 5px;
+}

@@ -5,13 +5,34 @@ import { web3, contract } from "../../web3Utils";
 import styles from "./StrataFeeManager.module.css";
 
 import Container from "@mui/material/Container";
-import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 
 import StrataCorproation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
 import RequestItem from "../RequestItem/RequestItem";
 
+const mapRequestType = (requestTypeEnum) => {
+	switch (requestTypeEnum) {
+		case "0":
+			return "Expense";
+		case "1":
+			return "Strata Fee Change";
+		default:
+			return "Unknown";
+	}
+};
+
+const mapRequestStatus = (requestStatusEnum) => {
+	switch (requestStatusEnum) {
+		case "0":
+			return "Approved";
+		case "1":
+			return "Rejected";
+		case "2":
+			return "Pending";
+	}
+};
 const StrataFeeManager = ({ account }) => {
 	const [strataAccount, setStrataAccount] = useState(null);
 	const [totalMonthlyStrataFee, setTotalMonthlyStrataFee] = useState(0);
@@ -115,59 +136,69 @@ const StrataFeeManager = ({ account }) => {
 		<>
 			{isUsingStrataAccount && (
 				<Container disableGutters>
-					<StrataCorproation totalMonthlyStrataFee={totalMonthlyStrataFee} />
+					<StrataCorproation
+						totalMonthlyStrataFee={totalMonthlyStrataFee}
+						units={units}
+					/>
 				</Container>
 			)}
 			<Container disableGutters>
-				<h2>Wallet Information</h2>
+				<Typography className={styles.header}>Owner Information</Typography>
+				<Typography className={styles.subHeader}>Wallet</Typography>
 				<div>
 					<div className={styles.dataField}>
-						<span className={styles.label}>Account number: </span>
-						{account}
+						<Typography className={styles.label}>Account number:</Typography>
+						<Typography className={styles.value}>{account}</Typography>
 					</div>
 					<div className={styles.dataField}>
-						<span className={styles.label}>Balance: </span>
-						{accountBalance} ETH
+						<Typography className={styles.label}>Balance:</Typography>
+						<Typography className={styles.value}>
+							{accountBalance} ETH
+						</Typography>
 					</div>
 				</div>
 			</Container>
 			<Container disableGutters>
-				<h2>Strata Account Information</h2>
+				<Typography className={styles.subHeader}>Strata Account</Typography>
 				<div>
 					<div className={styles.dataField}>
-						<span className={styles.label}>Auto approve threshold: </span>
-						{autoApproveThreshold} ETH
+						<Typography className={styles.label}>
+							Expense Auto Approval Threshold:
+						</Typography>
+						<Typography className={styles.value}>
+							{autoApproveThreshold} ETH
+						</Typography>
 					</div>
 					<div className={styles.dataField}>
-						<span className={styles.label}>Auto reject threshold: </span>
-						{autoRejectThreshold} ETH
+						<Typography className={styles.label}>
+							Expense Auto Rejection Threshold:
+						</Typography>
+						<Typography className={styles.value}>
+							{autoRejectThreshold} ETH
+						</Typography>
 					</div>
 				</div>
 			</Container>
 			<Container disableGutters>
-				<h2>Requests</h2>
+				<Typography className={styles.subHeader}>Requests</Typography>
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
-					{Object.keys(requests)
-						// .filter(
-						// 	(requestId) =>
-						// 		requests[requestId].currentOwnership.owner.account === account
-						// )
-						.map((requestId) => {
-							const requestItem = requests[requestId];
-							return (
-								<RequestItem
-									key={requestId}
-									requestId={requestId}
-									requestType={requestItem.requestType}
-									amount={requestItem.amount}
-									reason={requestItem.description}
-								/>
-							);
-						})}
+					{Object.keys(requests).map((requestId) => {
+						const requestItem = requests[requestId];
+						return (
+							<RequestItem
+								key={requestId}
+								requestId={requestId}
+								requestType={mapRequestType(requestItem.requestType)}
+								requestStatus={mapRequestStatus(requestItem.status)}
+								amount={requestItem.amount}
+								reason={requestItem.description}
+							/>
+						);
+					})}
 				</Stack>
 			</Container>
 			<Container disableGutters>
-				<h2>Owned Units</h2>
+				<Typography className={styles.subHeader}>Owned Units</Typography>
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
 					{Object.keys(units)
 						.filter(
@@ -183,7 +214,7 @@ const StrataFeeManager = ({ account }) => {
 									entitlement={unit.entitlement}
 									strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
 									strataFeeBalance={unit.strataFeeBalance}
-									ownership={unit.currentOwnership}
+									isOwner
 								/>
 							);
 						})}

@@ -1,4 +1,24 @@
-.container {
+.unitContainer {
+	overflow-x: scroll;
+}
+
+.header {
+	font-size: 24pt;
+}
+
+.subHeader {
+	font-size: 18pt;
+}
+
+.body,
+.label,
+.value {
+	font-size: 12pt;
+}
+
+.label {
+	font-weight: bold;
+	margin-right: 5px;
 }
 
 .unitContainer {
@@ -6,14 +26,6 @@
 }
 
 .dataField {
-	margin-bottom: 5px;
-}
-
-.label {
-	font-weight: bold;
-}
-
-.form {
 	display: flex;
-	flex-direction: column;
+	margin-bottom: 5px;
 }
