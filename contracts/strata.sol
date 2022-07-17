@@ -19,7 +19,7 @@ contract Strata {
     uint32 constant weekInSeconds = 7 * 24 * 60 * 60;
 
     type StrataLotId is uint16;
-    type ExpenseId is uint;
+    type RequestId is uint;
     type Date is uint;
 
     struct Unit {
@@ -40,25 +40,32 @@ contract Strata {
         uint256 autoApproveThreshold;
         uint256 autoRejectThreshold;
         address account;
+        uint16 ownedUnitsCount;
     }
 
-    enum ExpenseStatus {
+    enum RequestStatus {
         Approved,
         Rejected,
         Pending
     }
 
-    struct ExpenseItem {
+    enum RequestType {
+        Expense,
+        FeeChange
+    }
+
+    struct RequestItem {
+        RequestType requestType;
         string description;
         uint256 amount;
-        ExpenseStatus status;
+        RequestStatus status;
         uint8 approvalVoteCount;
         uint8 rejectionVoteCount;
         Date voteDeadline;
     }
 
-    event VoteStarted(
-        ExpenseId expenseId
+    event RequestModified(
+        RequestId requestId
     );
 
     event StrataFeePaid(
@@ -74,17 +81,18 @@ contract Strata {
 
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
-    mapping(ExpenseId => ExpenseItem) public expenses;
-    mapping(ExpenseId => mapping(StrataLotId => bool)) expenseVoters;
+    mapping(RequestId => RequestItem) public requests;
+    mapping(RequestId => mapping(StrataLotId => bool)) private requestVoters;
 
     //This is necessary because apparently you cannot directly iterate through entries in a mapping.
     StrataLotId[] public strataLotIds;
+    RequestId[] public requestIds;
 
     address public strataAccount;
     uint256 public totalMonthlyStrataFee;
     uint16 totalEntitlement;
 
-    uint expenseIdCounter;
+    uint requestIdCounter;
     
     constructor() {
         strataAccount = msg.sender;
@@ -92,14 +100,15 @@ contract Strata {
 
         totalEntitlement = 600;
 
-        expenseIdCounter = 0;
+        requestIdCounter = 0;
 
         // initially assume all units are owned by strata corp, call transferOwner to change ownership
 
         Owner memory defaultOwner = Owner({
             account: strataAccount,
             autoApproveThreshold: 0,
-            autoRejectThreshold: 2**256 - 1
+            autoRejectThreshold: 2**256 - 1,
+            ownedUnitsCount: 3
         });
 
         units[StrataLotId.wrap(1)] = Unit({
@@ -143,6 +152,14 @@ contract Strata {
         owners[strataAccount] = defaultOwner;
     }
 
+    function strataLotCount() public view returns (uint) {
+        return strataLotIds.length;
+    }
+
+    function requestCount() public view returns (uint) {
+        return requestIds.length;
+    }
+
     // collect strata fee from owner
     function payStrataFee(StrataLotId strataLotId) public payable {
         verifySenderIsOwnerOfStrataLot(strataLotId);
@@ -171,20 +188,19 @@ contract Strata {
         verifySenderIsStrataCorporation();
 
         // create entry in expenses 
-        ExpenseItem memory expenseItem = ExpenseItem({
+        RequestItem memory requestItem = RequestItem({
+            requestType: RequestType.Expense,
             description: description,
             amount: amount,
-            status: ExpenseStatus.Pending,
+            status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
             voteDeadline: Date.wrap(block.timestamp + weekInSeconds)
         });
 
-        ExpenseId expenseId = ExpenseId.wrap(expenseIdCounter++);
-        expenses[expenseId] = expenseItem;
-
-        // emit Vote event
-        emit VoteStarted(expenseId);
+        RequestId requestId = RequestId.wrap(requestIdCounter++);
+        requests[requestId] = requestItem;
+        requestIds.push(requestId);
 
         for (uint i = 0; i < strataLotIds.length; ++i) {
             StrataLotId strataLotId = strataLotIds[i];
@@ -197,72 +213,75 @@ contract Strata {
             //and based on the tracking of voters, once an auto vote is entered,
             //the vote cannot be switched
 
-            if (expenseItem.amount < owner.autoApproveThreshold) {
-                ++expenseItem.approvalVoteCount;
-                expenseVoters[expenseId][strataLotId] = true;
+            if (requestItem.amount < owner.autoApproveThreshold) {
+                ++requestItem.approvalVoteCount;
+                requestVoters[requestId][strataLotId] = true;
             }
-            else if (expenseItem.amount > owner.autoRejectThreshold) {
-                ++expenseItem.rejectionVoteCount;
-                expenseVoters[expenseId][strataLotId] = true;
+            else if (requestItem.amount > owner.autoRejectThreshold) {
+                ++requestItem.rejectionVoteCount;
+                requestVoters[requestId][strataLotId] = true;
             }
 
         }
 
+        // emit Vote event
+        emit RequestModified(requestId);
+
         // return date of deadline
-        return expenseItem.voteDeadline;
+        return requestItem.voteDeadline;
     }
 
     // withdraw money from expense
-    function withdraw(ExpenseId expenseId) public returns (ExpenseStatus) {
+    function withdraw(RequestId requestId) public returns (RequestStatus) {
         verifySenderIsStrataCorporation();
 
-        ExpenseItem memory expenseItem = expenses[expenseId];
+        RequestItem memory requestItem = requests[requestId];
 
         //If more than half of all units approved, so end vote early
-        if (expenseItem.approvalVoteCount >= strataLotIds.length) {
-            delete expenses[expenseId];
-            payable(strataAccount).transfer(expenseItem.amount);
-            return ExpenseStatus.Approved;
+        if (requestItem.approvalVoteCount >= strataLotIds.length) {
+            // delete requests[requestId];
+            payable(strataAccount).transfer(requestItem.amount);
+            return RequestStatus.Approved;
         }
 
         //If more than half of all units rejected, so end vote early
-        if (expenseItem.rejectionVoteCount > strataLotIds.length) {
-            delete expenses[expenseId];
-            return ExpenseStatus.Rejected;
+        if (requestItem.rejectionVoteCount > strataLotIds.length) {
+            // delete requests[requestId];
+            return RequestStatus.Rejected;
         }
 
         //If vote is not over
-        if (block.timestamp < Date.unwrap(expenseItem.voteDeadline)) {
-            return ExpenseStatus.Pending;
+        if (block.timestamp < Date.unwrap(requestItem.voteDeadline)) {
+            return RequestStatus.Pending;
         }
 
         //Vote is now over, so delete the expense
-        delete expenses[expenseId];
+        // delete requests[requestId];
 
         //If more voters approved than rejected, then approve the expense
-        if (expenseItem.approvalVoteCount >= expenseItem.rejectionVoteCount) {
-            payable(strataAccount).transfer(expenseItem.amount);
-            return ExpenseStatus.Approved;
+        if (requestItem.approvalVoteCount >= requestItem.rejectionVoteCount) {
+            payable(strataAccount).transfer(requestItem.amount);
+            return RequestStatus.Approved;
         }
 
-        return ExpenseStatus.Rejected;
+        return RequestStatus.Rejected;
     }
 
     // vote
-    function voteOnExpense(ExpenseId expenseId, bool supportsExpense, StrataLotId strataLotId) public {
+    function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId strataLotId) public {
         verifySenderIsOwnerOfStrataLot(strataLotId);
-        require(expenseVoters[expenseId][strataLotId] == false);
+        require(requestVoters[requestId][strataLotId] == false);
 
-        ExpenseItem memory expenseItem = expenses[expenseId];
+        RequestItem memory requestItem = requests[requestId];
         
-        if (supportsExpense) {
-            ++expenseItem.approvalVoteCount;
+        if (supportsRequest) {
+            ++requestItem.approvalVoteCount;
         }
         else {
-            ++expenseItem.rejectionVoteCount;
+            ++requestItem.rejectionVoteCount;
         }
 
-        expenseVoters[expenseId][strataLotId] = true;
+        requestVoters[requestId][strataLotId] = true;
     }
 
     function setAutoApproveThreshold(uint256 amount) public {
@@ -280,7 +299,6 @@ contract Strata {
     // owner transfer as of now
     function transferOwner(StrataLotId strataLotId, address newOwnerAccount) public {
         verifySenderIsOwnerOfStrataLot(strataLotId);
-        require(newOwnerAccount != address(0));
 
         refundUnusedStrataFee(strataLotId);
 
@@ -289,21 +307,27 @@ contract Strata {
             newOwner = Owner({
                 account: newOwnerAccount,
                 autoApproveThreshold: 0,
-                autoRejectThreshold: 2**256 - 1
+                autoRejectThreshold: 2**256 - 1,
+                ownedUnitsCount: 0
             });
         }
 
-        units[StrataLotId.wrap(3)] = Unit({
-            entitlement: 300,
-            currentOwnership: Ownership({
+        Unit memory unit = units[strataLotId];
+        unit.currentOwnership = Ownership({
                 owner: newOwner,
                 sinceDate: Date.wrap(block.timestamp),
                 paidStrataFees: 0,
                 paidExpenses: 0
-            }),
-            strataFeeBalance: 0
-        });
+            });
+        unit.strataFeeBalance = 0;
 
+        Owner memory oldOwner = owners[msg.sender];
+        --oldOwner.ownedUnitsCount;
+        if (oldOwner.ownedUnitsCount == 0) {
+            delete owners[msg.sender];
+        }
+
+        ++newOwner.ownedUnitsCount;
         owners[newOwnerAccount] = newOwner;
     }
 

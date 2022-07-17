@@ -25,7 +25,7 @@ const SignIn = ({ onSignIn }) => {
 	};
 
 	return (
-		<Container>
+		<Container disableGutters>
 			<h1>Sign In</h1>
 			<Button onClick={onConnect}>Connect to MetaMask</Button>
 		</Container>

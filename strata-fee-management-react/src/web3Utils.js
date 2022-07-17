@@ -33,7 +33,7 @@ const createWeb3Instance = () => {
 	return undefined;
 };
 
-const contractAddress = "0xf16c2a910506DeE5cc5FcD058768aB8a597AffBa";
+const contractAddress = "0xCFA647A74c6d6c7E17144EF1BB151aa44BD8c48f";
 const contractAbi = require("./contract.json");
 
 export const provider = detectCurrentProvider();

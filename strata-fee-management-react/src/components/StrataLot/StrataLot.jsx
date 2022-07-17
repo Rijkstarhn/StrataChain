@@ -11,8 +11,8 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 
 import { TransactionInProgressContext } from "../App/App";
-
-const placeholderAddress = "0xaaaaaaabbbbbbbcccccccdddddddeeeeeeefffffff";
+import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
+import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
 
 const StrataLot = ({
 	lotId,
@@ -22,7 +22,11 @@ const StrataLot = ({
 	ownership
 }) => {
 	const [transferOwnerAddress, setTransferOwnerAddress] = useState("");
-	const [strataFeePaymentAmount, setStrataFeePaymentAmount] = useState(0);
+	// const [strataFeePaymentAmount, setStrataFeePaymentAmount] = useState(0);
+
+	const [isPayStrataFeeOpen, setPayStrataFeeOpen] = useState(false);
+	const [isTransferOwnerOpen, setTransferOwnerOpen] = useState(false);
+
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handlePayStrataFee = async (amount) => {
@@ -65,32 +69,28 @@ const StrataLot = ({
 			</div>
 
 			<div className={styles.dataField}>
-				<Button onClick={() => handlePayStrataFee(strataFeePaymentAmount)}>
+				<Button onClick={() => setPayStrataFeeOpen(true)}>
 					Pay Strata Fee
 				</Button>
-				<OutlinedInput
-					id={`pay-strata-fee-${lotId}`}
-					type="number"
-					value={strataFeePaymentAmount}
-					onChange={(e) => {
-						setStrataFeePaymentAmount(e.target.value);
-					}}
-				/>
 			</div>
 
 			<div className={styles.dataField}>
-				<Button onClick={() => handleTransferOwner(transferOwnerAddress)}>
+				<Button onClick={() => setTransferOwnerOpen(true)}>
 					Transfer Owner
 				</Button>
-				<OutlinedInput
-					placeholder={placeholderAddress}
-					id={`transfer-owner-${lotId}`}
-					type="text"
-					onChange={(e) => {
-						setTransferOwnerAddress(e.target.value);
-					}}
-				/>
 			</div>
+
+			<PayStrataFeeForm
+				lotId={lotId}
+				isOpen={isPayStrataFeeOpen}
+				onClose={() => setPayStrataFeeOpen(false)}
+			/>
+
+			<TransferOwnerForm
+				lotId={lotId}
+				isOpen={isTransferOwnerOpen}
+				onClose={() => setTransferOwnerOpen(false)}
+			/>
 		</div>
 	);
 };
