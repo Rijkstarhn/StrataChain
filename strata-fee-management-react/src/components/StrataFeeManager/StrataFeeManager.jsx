@@ -6,6 +6,7 @@ import styles from "./StrataFeeManager.module.css";
 
 import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
+import Stack from "@mui/material/Stack";
 
 import StrataCorproation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
@@ -83,11 +84,11 @@ const StrataFeeManager = ({ account }) => {
 	return (
 		<>
 			{isUsingStrataAccount && (
-				<>
+				<Container disableGutters>
 					<StrataCorproation totalMonthlyStrataFee={totalMonthlyStrataFee} />
-				</>
+				</Container>
 			)}
-			<Container>
+			<Container disableGutters>
 				<h2>Wallet Information</h2>
 				<div>
 					<div className={styles.dataField}>
@@ -100,7 +101,7 @@ const StrataFeeManager = ({ account }) => {
 					</div>
 				</div>
 			</Container>
-			<Container>
+			<Container disableGutters>
 				<h2>Strata Account Information</h2>
 				<div>
 					<div className={styles.dataField}>
@@ -113,26 +114,28 @@ const StrataFeeManager = ({ account }) => {
 					</div>
 				</div>
 			</Container>
-			<Container>
+			<Container disableGutters>
 				<h2>Owned Units</h2>
-				{Object.keys(units)
-					.filter(
-						(strataLotId) =>
-							units[strataLotId].currentOwnership.owner.account === account
-					)
-					.map((strataLotId) => {
-						const unit = units[strataLotId];
-						return (
-							<StrataLot
-								key={strataLotId}
-								lotId={strataLotId}
-								entitlement={unit.entitlement}
-								strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
-								strataFeeBalance={unit.strataFeeBalance}
-								ownership={unit.currentOwnership}
-							/>
-						);
-					})}
+				<Stack direction="row" spacing={4} className={styles.unitContainer}>
+					{Object.keys(units)
+						.filter(
+							(strataLotId) =>
+								units[strataLotId].currentOwnership.owner.account === account
+						)
+						.map((strataLotId) => {
+							const unit = units[strataLotId];
+							return (
+								<StrataLot
+									key={strataLotId}
+									lotId={strataLotId}
+									entitlement={unit.entitlement}
+									strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
+									strataFeeBalance={unit.strataFeeBalance}
+									ownership={unit.currentOwnership}
+								/>
+							);
+						})}
+				</Stack>
 			</Container>
 		</>
 	);

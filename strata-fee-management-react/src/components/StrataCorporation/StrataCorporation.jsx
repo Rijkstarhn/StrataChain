@@ -39,30 +39,26 @@ const StrataCorporation = ({ totalMonthlyStrataFee }) => {
 
 	return (
 		<>
-			<Container>
-				<h2>Strata Corporation Details</h2>
-				This section is only visible if logged in using the strata account. We
-				could use it to provide a UI for things that the strata needs to do
-				<div className={styles.dataField}>
-					<span className={styles.label}>Total Monthly Strata Fee: </span>
-					{totalMonthlyStrataFee} ETH
-				</div>
-				<Button onClick={() => handleCollectStrataFees()}>
-					Collect Strata Fees
-				</Button>
-				<Button onClick={() => setRequestExpenseOpen(true)}>
-					Request Expense
-				</Button>
-				<Button onClick={() => setRequestStrataFeeChangeOpen(true)}>
-					Request Strata Fee Change
-				</Button>
-			</Container>
-
+			<h2>Strata Corporation Details</h2>
+			This section is only visible if logged in using the strata account. We
+			could use it to provide a UI for things that the strata needs to do
+			<div className={styles.dataField}>
+				<span className={styles.label}>Total Monthly Strata Fee: </span>
+				{totalMonthlyStrataFee} ETH
+			</div>
+			<Button onClick={() => handleCollectStrataFees()}>
+				Collect Strata Fees
+			</Button>
+			<Button onClick={() => setRequestExpenseOpen(true)}>
+				Request Expense
+			</Button>
+			<Button onClick={() => setRequestStrataFeeChangeOpen(true)}>
+				Request Strata Fee Change
+			</Button>
 			<RequestExpenseForm
 				isOpen={isRequestExpenseOpen}
 				onClose={() => setRequestExpenseOpen(false)}
 			/>
-
 			<RequestStrataFeeChangeForm
 				isOpen={isRequestStrataFeeChangeOpen}
 				onClose={() => setRequestStrataFeeChangeOpen(false)}

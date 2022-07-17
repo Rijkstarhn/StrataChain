@@ -2,7 +2,7 @@
 }
 
 .unitContainer {
-	margin-bottom: 20px;
+	overflow-x: scroll;
 }
 
 .dataField {
