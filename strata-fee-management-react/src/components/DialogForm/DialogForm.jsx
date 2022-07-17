@@ -6,6 +6,8 @@ import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
 	const { formState, handleSubmit, reset } = useFormContext();
@@ -23,6 +25,10 @@ export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
 			<DialogContent>
 				<form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
 					{children}
+
+					<IconButton className={styles.closeButton} onClick={handleOnClose}>
+						<CloseIcon />
+					</IconButton>
 
 					<div className={styles.buttonContainer}>
 						<Button
