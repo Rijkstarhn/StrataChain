@@ -23,7 +23,6 @@ contract Strata {
     type Date is uint;
 
     struct Unit {
-        StrataLotId strataLotId;
         uint16 entitlement;
         Ownership currentOwnership;
         int256 strataFeeBalance;
@@ -62,6 +61,13 @@ contract Strata {
         ExpenseId expenseId
     );
 
+    event StrataFeePaid(
+        StrataLotId strataLotId,
+        uint256 amount
+    );
+
+    event StrataFeesCollected();
+
     //TODO: Apparently with a mapping, every key-value pair exists with values defaulting to zero-initialized values.
     //Because of this, we need to be careful about what assumptions we are making when we want to check if an
     //item exists in the map. For this, we'd basically need to check some portion of the value struct to see if it is valid or not
@@ -97,7 +103,6 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(1)] = Unit({
-            strataLotId: StrataLotId.wrap(1),
             entitlement: 100,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -109,7 +114,6 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(2)] = Unit({
-            strataLotId: StrataLotId.wrap(2),
             entitlement: 200,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -121,7 +125,6 @@ contract Strata {
         });
 
         units[StrataLotId.wrap(3)] = Unit({
-            strataLotId: StrataLotId.wrap(3),
             entitlement: 300,
             currentOwnership: Ownership({
                 owner: defaultOwner,
@@ -144,9 +147,9 @@ contract Strata {
     function payStrataFee(StrataLotId strataLotId) public payable {
         verifySenderIsOwnerOfStrataLot(strataLotId);
         
-        payable(address(this)).transfer(msg.value);
-
         units[strataLotId].strataFeeBalance -= int256(msg.value);
+
+        emit StrataFeePaid(strataLotId, msg.value);
     }
 
     function collectStrataFeePayments() public {
@@ -159,6 +162,8 @@ contract Strata {
             
             units[strataLotId].strataFeeBalance += int256(balanceToAdd);
         }
+
+        emit StrataFeesCollected();
     }
 
     // request withdrawal - returns the deadline date of vote
@@ -288,12 +293,16 @@ contract Strata {
             });
         }
 
-        units[strataLotId].currentOwnership = Ownership({
+        units[StrataLotId.wrap(3)] = Unit({
+            entitlement: 300,
+            currentOwnership: Ownership({
                 owner: newOwner,
                 sinceDate: Date.wrap(block.timestamp),
                 paidStrataFees: 0,
                 paidExpenses: 0
-            });
+            }),
+            strataFeeBalance: 0
+        });
 
         owners[newOwnerAccount] = newOwner;
     }
