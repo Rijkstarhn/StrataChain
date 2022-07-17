@@ -1,27 +1,14 @@
-import { useState, useContext } from "react";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 
 import styles from "./DialogForm.module.css";
 
-import { contract, sendTransaction } from "../../web3Utils";
-
-import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import OutlinedInput from "@mui/material/OutlinedInput";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 
-import { TransactionInProgressContext } from "../App/App";
-
 export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
-	// const methods = useForm({
-	// 	mode: "onChange"
-	// });
-	// const { formState, handleSubmit, control } = methods;
-
-	const { formState, handleSubmit } = useFormContext();
+	const { formState, handleSubmit, reset } = useFormContext();
 
 	const handleOnClose = (event, reason) => {
 		if (reason === "backdropClick") {
@@ -38,7 +25,13 @@ export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
 					{children}
 
 					<div className={styles.buttonContainer}>
-						<Button type="reset" onClick={handleOnClose}>
+						<Button
+							type="reset"
+							onClick={() => {
+								reset();
+								handleOnClose();
+							}}
+						>
 							Cancel
 						</Button>
 
