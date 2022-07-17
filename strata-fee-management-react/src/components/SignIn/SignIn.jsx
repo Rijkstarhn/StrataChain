@@ -2,6 +2,9 @@ import styles from "./SignIn.module.css";
 
 import { web3, provider } from "../../web3Utils";
 
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+
 const SignIn = ({ onSignIn }) => {
 	const onConnect = async () => {
 		try {
@@ -22,16 +25,10 @@ const SignIn = ({ onSignIn }) => {
 	};
 
 	return (
-		<div>
-			<div>
-				<h1>Sign In</h1>
-			</div>
-			<div>
-				<div>
-					<button onClick={onConnect}>Connect to MetaMask</button>
-				</div>
-			</div>
-		</div>
+		<Container>
+			<h1>Sign In</h1>
+			<Button onClick={onConnect}>Connect to MetaMask</Button>
+		</Container>
 	);
 };
 

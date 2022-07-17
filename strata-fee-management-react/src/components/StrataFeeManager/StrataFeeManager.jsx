@@ -4,6 +4,10 @@ import { web3, contract } from "../../web3Utils";
 
 import styles from "./StrataFeeManager.module.css";
 
+import Container from "@mui/material/Container";
+import Divider from "@mui/material/Divider";
+
+import StrataCorproation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
 
 const StrataFeeManager = ({ account }) => {
@@ -74,45 +78,19 @@ const StrataFeeManager = ({ account }) => {
 		})();
 	}, [account]);
 
-	const handleCollectStrataFees = async () => {
-		await contract.methods.collectStrataFeePayments().send();
-	};
-
-	const handlePayStrataFee = async (strataLotId, amount) => {
-		const weiToSend = web3.utils.toWei(amount, "ether");
-		console.log(weiToSend);
-		console.log(contract.methods);
-		await contract.methods
-			.payStrataFee(strataLotId)
-			.send({ from: account, value: weiToSend });
-	};
-
-	const handleTransferOwner = async (strataLotId, newOwnerAccount) => {
-		await contract.methods.transferOwner(strataLotId, newOwnerAccount).send();
-	};
-
 	const isUsingStrataAccount = account === strataAccount;
 
 	return (
-		<div className={styles.container}>
+		<Container>
 			<div>
 				<h1>Strata Fee Manager</h1>
 			</div>
 			{isUsingStrataAccount && (
-				<div>
-					<h2>Strata Corporation Details</h2>
-					This section is only visible if logged in using the strata account. We
-					could use it to provide a UI for things that the strata needs to do
-					<div className={styles.dataField}>
-						<span className={styles.label}>Total Monthly Strata Fee: </span>
-						{totalMonthlyStrataFee} ETH
-					</div>
-					<button onClick={() => handleCollectStrataFees()}>
-						Collect Strata Fees
-					</button>
-				</div>
+				<>
+					<StrataCorproation totalMonthlyStrataFee={totalMonthlyStrataFee} />
+				</>
 			)}
-			<div>
+			<Container>
 				<h2>Wallet Information</h2>
 				<div>
 					<div className={styles.dataField}>
@@ -124,8 +102,8 @@ const StrataFeeManager = ({ account }) => {
 						{accountBalance} ETH
 					</div>
 				</div>
-			</div>
-			<div>
+			</Container>
+			<Container>
 				<h2>Strata Account Information</h2>
 				<div>
 					<div className={styles.dataField}>
@@ -137,8 +115,8 @@ const StrataFeeManager = ({ account }) => {
 						{autoRejectThreshold} ETH
 					</div>
 				</div>
-			</div>
-			<div>
+			</Container>
+			<Container>
 				<h2>Owned Units</h2>
 				{Object.keys(units)
 					.filter(
@@ -147,7 +125,6 @@ const StrataFeeManager = ({ account }) => {
 					)
 					.map((strataLotId) => {
 						const unit = units[strataLotId];
-						console.log(unit);
 						return (
 							<StrataLot
 								key={strataLotId}
@@ -159,8 +136,8 @@ const StrataFeeManager = ({ account }) => {
 							/>
 						);
 					})}
-			</div>
-		</div>
+			</Container>
+		</Container>
 	);
 };
 

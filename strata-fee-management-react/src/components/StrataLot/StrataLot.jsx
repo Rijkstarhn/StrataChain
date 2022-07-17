@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 import styles from "./StrataLot.module.css";
 
-import { web3, contract } from "../../web3Utils";
+import { web3, contract, sendTransaction } from "../../web3Utils";
+
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+
+import { TransactionInProgressContext } from "../App/App";
 
 const StrataLot = ({
 	lotId,
@@ -13,20 +19,26 @@ const StrataLot = ({
 }) => {
 	const [transferOwnerAddress, setTransferOwnerAddress] = useState("");
 	const [strataFeePaymentAmount, setStrataFeePaymentAmount] = useState(0);
+	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handlePayStrataFee = async (amount) => {
 		const weiToSend = web3.utils.toWei(amount, "ether");
-		console.log(weiToSend);
-		console.log(contract.methods);
-		await contract.methods.payStrataFee(lotId).send({ value: weiToSend });
+		await sendTransaction(
+			contract.methods.payStrataFee(lotId),
+			setTransactionInProgress,
+			{ value: weiToSend }
+		);
 	};
 
 	const handleTransferOwner = async (newOwnerAccount) => {
-		await contract.methods.transferOwner(lotId, newOwnerAccount).send();
+		await sendTransaction(
+			contract.methods.transferOwner(lotId, newOwnerAccount),
+			setTransactionInProgress
+		);
 	};
 
 	return (
-		<div className={styles.unitContainer}>
+		<Container>
 			<div className={styles.dataField}>
 				<span className={styles.label}>Lot ID: </span>
 				{lotId}
@@ -49,10 +61,10 @@ const StrataLot = ({
 			</div>
 
 			<div className={styles.dataField}>
-				<button onClick={() => handlePayStrataFee(strataFeePaymentAmount)}>
+				<Button onClick={() => handlePayStrataFee(strataFeePaymentAmount)}>
 					Pay Strata Fee
-				</button>
-				<input
+				</Button>
+				<TextField
 					id={`pay-strata-fee-${lotId}`}
 					type="number"
 					onChange={(e) => {
@@ -62,10 +74,10 @@ const StrataLot = ({
 			</div>
 
 			<div className={styles.dataField}>
-				<button onClick={() => handleTransferOwner(transferOwnerAddress)}>
+				<Button onClick={() => handleTransferOwner(transferOwnerAddress)}>
 					Transfer Owner
-				</button>
-				<input
+				</Button>
+				<TextField
 					id={`transfer-owner-${lotId}`}
 					type="text"
 					onChange={(e) => {
@@ -73,7 +85,7 @@ const StrataLot = ({
 					}}
 				/>
 			</div>
-		</div>
+		</Container>
 	);
 };
 

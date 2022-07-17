@@ -41,3 +41,21 @@ export const provider = detectCurrentProvider();
 export const web3 = createWeb3Instance();
 
 export const contract = new web3.eth.Contract(contractAbi, contractAddress);
+
+export const sendTransaction = async (
+	method,
+	setTransactionInProgress,
+	options
+) => {
+	setTransactionInProgress(true);
+	await method
+		.send(options)
+		.on("receipt", (receipt) => {
+			console.log(receipt);
+			setTransactionInProgress(false);
+		})
+		.on("error", (error) => {
+			console.log(error);
+			setTransactionInProgress(false);
+		});
+};
