@@ -45,7 +45,7 @@ export const RequestStrataFeeChangeForm = ({ isOpen, onClose }) => {
 							onChange={(e) => onChange(e.target.value)}
 						/>
 					)}
-					rules={{ required: true, min: 1 }}
+					rules={{ required: true, min: 0 }}
 				/>
 
 				<span>Reason</span>

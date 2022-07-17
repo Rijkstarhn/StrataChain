@@ -10,6 +10,7 @@ import Stack from "@mui/material/Stack";
 
 import StrataCorproation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
+import RequestItem from "../RequestItem/RequestItem";
 
 const StrataFeeManager = ({ account }) => {
 	const [strataAccount, setStrataAccount] = useState(null);
@@ -18,6 +19,7 @@ const StrataFeeManager = ({ account }) => {
 	const [autoApproveThreshold, setAutoApproveThreshold] = useState(0);
 	const [autoRejectThreshold, setAutoRejectThreshold] = useState(0);
 	const [units, setUnits] = useState({});
+	const [requests, setRequests] = useState({});
 
 	useEffect(() => {
 		(async () => {
@@ -45,19 +47,36 @@ const StrataFeeManager = ({ account }) => {
 				);
 
 				const refreshUnits = async () => {
+					const unitCount = await contract.methods.strataLotCount().call();
+
 					let units = {};
-					for (let i = 0; i < 3; ++i) {
+					for (let i = 0; i < unitCount; ++i) {
 						let strataLotId = await contract.methods.strataLotIds(i).call();
-						units = {
-							...units,
-							[strataLotId]: await contract.methods.units(strataLotId).call()
-						};
+						units[strataLotId] = await contract.methods
+							.units(strataLotId)
+							.call();
 					}
 
 					setUnits(units);
 				};
 
 				await refreshUnits();
+
+				const refreshRequests = async () => {
+					const requestCount = await contract.methods.requestCount().call();
+
+					let requests = {};
+					for (let i = 0; i < requestCount; ++i) {
+						let requestId = await contract.methods.requestIds(i).call();
+						requests[requestId] = await contract.methods
+							.requests(requestId)
+							.call();
+					}
+
+					setRequests(requests);
+				};
+
+				await refreshRequests();
 
 				//Subscribe to events
 				contract.events.StrataFeesCollected().on("data", async () => {
@@ -72,6 +91,17 @@ const StrataFeeManager = ({ account }) => {
 						[strataLotId]: updatedUnit
 					}));
 					console.log(event);
+				});
+
+				contract.events.RequestModified().on("data", async (event) => {
+					const { requestId } = event.returnValues;
+					const updatedRequest = await contract.methods
+						.requests(requestId)
+						.call();
+					setRequests((prevRequests) => ({
+						...prevRequests,
+						[requestId]: updatedRequest
+					}));
 				});
 			} catch (err) {
 				console.log(err);
@@ -113,6 +143,28 @@ const StrataFeeManager = ({ account }) => {
 						{autoRejectThreshold} ETH
 					</div>
 				</div>
+			</Container>
+			<Container disableGutters>
+				<h2>Requests</h2>
+				<Stack direction="row" spacing={4} className={styles.unitContainer}>
+					{Object.keys(requests)
+						// .filter(
+						// 	(requestId) =>
+						// 		requests[requestId].currentOwnership.owner.account === account
+						// )
+						.map((requestId) => {
+							const requestItem = requests[requestId];
+							return (
+								<RequestItem
+									key={requestId}
+									requestId={requestId}
+									requestType={requestItem.requestType}
+									amount={requestItem.amount}
+									reason={requestItem.description}
+								/>
+							);
+						})}
+				</Stack>
 			</Container>
 			<Container disableGutters>
 				<h2>Owned Units</h2>

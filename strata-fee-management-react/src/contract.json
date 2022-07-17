@@ -9,6 +9,19 @@
 		"inputs": [
 			{
 				"indexed": false,
+				"internalType": "Strata.RequestId",
+				"name": "requestId",
+				"type": "uint256"
+			}
+		],
+		"name": "RequestModified",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
 				"internalType": "Strata.StrataLotId",
 				"name": "strataLotId",
 				"type": "uint16"
@@ -27,19 +40,6 @@
 		"anonymous": false,
 		"inputs": [],
 		"name": "StrataFeesCollected",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "Strata.RequestId",
-				"name": "requestId",
-				"type": "uint256"
-			}
-		],
-		"name": "VoteStarted",
 		"type": "event"
 	},
 	{
@@ -94,6 +94,38 @@
 		"name": "payStrataFee",
 		"outputs": [],
 		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "requestCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "requestIds",
+		"outputs": [
+			{
+				"internalType": "Strata.RequestId",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -203,6 +235,19 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "strataLotCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

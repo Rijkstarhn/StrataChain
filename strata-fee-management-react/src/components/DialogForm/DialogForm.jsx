@@ -41,7 +41,11 @@ export const DialogForm = ({ isOpen, onClose, title, onSubmit, children }) => {
 							Cancel
 						</Button>
 
-						<Button type="submit" disabled={!formState.isValid}>
+						<Button
+							type="submit"
+							disabled={!formState.isValid}
+							onClick={handleOnClose}
+						>
 							Submit
 						</Button>
 					</div>

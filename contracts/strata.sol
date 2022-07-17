@@ -64,7 +64,7 @@ contract Strata {
         Date voteDeadline;
     }
 
-    event VoteStarted(
+    event RequestModified(
         RequestId requestId
     );
 
@@ -82,10 +82,11 @@ contract Strata {
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
     mapping(RequestId => RequestItem) public requests;
-    mapping(RequestId => mapping(StrataLotId => bool)) requestVoters;
+    mapping(RequestId => mapping(StrataLotId => bool)) private requestVoters;
 
     //This is necessary because apparently you cannot directly iterate through entries in a mapping.
     StrataLotId[] public strataLotIds;
+    RequestId[] public requestIds;
 
     address public strataAccount;
     uint256 public totalMonthlyStrataFee;
@@ -151,6 +152,14 @@ contract Strata {
         owners[strataAccount] = defaultOwner;
     }
 
+    function strataLotCount() public view returns (uint) {
+        return strataLotIds.length;
+    }
+
+    function requestCount() public view returns (uint) {
+        return requestIds.length;
+    }
+
     // collect strata fee from owner
     function payStrataFee(StrataLotId strataLotId) public payable {
         verifySenderIsOwnerOfStrataLot(strataLotId);
@@ -191,6 +200,7 @@ contract Strata {
 
         RequestId requestId = RequestId.wrap(requestIdCounter++);
         requests[requestId] = requestItem;
+        requestIds.push(requestId);
 
         for (uint i = 0; i < strataLotIds.length; ++i) {
             StrataLotId strataLotId = strataLotIds[i];
@@ -215,7 +225,7 @@ contract Strata {
         }
 
         // emit Vote event
-        emit VoteStarted(requestId);
+        emit RequestModified(requestId);
 
         // return date of deadline
         return requestItem.voteDeadline;
@@ -229,14 +239,14 @@ contract Strata {
 
         //If more than half of all units approved, so end vote early
         if (requestItem.approvalVoteCount >= strataLotIds.length) {
-            delete requests[requestId];
+            // delete requests[requestId];
             payable(strataAccount).transfer(requestItem.amount);
             return RequestStatus.Approved;
         }
 
         //If more than half of all units rejected, so end vote early
         if (requestItem.rejectionVoteCount > strataLotIds.length) {
-            delete requests[requestId];
+            // delete requests[requestId];
             return RequestStatus.Rejected;
         }
 
@@ -246,7 +256,7 @@ contract Strata {
         }
 
         //Vote is now over, so delete the expense
-        delete requests[requestId];
+        // delete requests[requestId];
 
         //If more voters approved than rejected, then approve the expense
         if (requestItem.approvalVoteCount >= requestItem.rejectionVoteCount) {
