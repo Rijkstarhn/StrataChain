@@ -192,6 +192,7 @@ const StrataFeeManager = ({ account }) => {
 								requestStatus={mapRequestStatus(requestItem.status)}
 								amount={requestItem.amount}
 								reason={requestItem.description}
+								isStrataCorporation={isUsingStrataAccount}
 							/>
 						);
 					})}

@@ -16,7 +16,8 @@ const RequestItem = ({
 	requestType,
 	requestStatus,
 	amount,
-	reason
+	reason,
+	isStrataCorporation
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
@@ -37,6 +38,30 @@ const RequestItem = ({
 	// 		setTransactionInProgress
 	// 	);
 	// };
+
+	let withdrawFundsButton = null;
+	let updateStrataFeeButton = null;
+
+	if (isStrataCorporation) {
+		if (requestStatus === "Approved") {
+			if (requestType === "Expense") {
+				withdrawFundsButton = (
+					<div className={styles.dataField}>
+						<Button onClick={() => {}}>Withdraw Funds</Button>
+					</div>
+				);
+			} else if (requestType === "Strata Fee Change") {
+				updateStrataFeeButton = (
+					<div className={styles.dataField}>
+						<Button onClick={() => {}}>Update Strata Fee</Button>
+					</div>
+				);
+			}
+		} else if (requestStatus === "Pending") {
+			//TODO: We could potentially support having the strata decline a request
+			//if they no longer need it
+		}
+	}
 
 	return (
 		<div className={styles.unitContainer}>
@@ -66,6 +91,10 @@ const RequestItem = ({
 					Vote on Request
 				</Button>
 			</div>
+
+			{withdrawFundsButton}
+
+			{updateStrataFeeButton}
 
 			<PayStrataFeeForm
 				lotId={requestId}
