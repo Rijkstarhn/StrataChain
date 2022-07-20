@@ -46,7 +46,7 @@ export const TransferOwnerForm = ({ lotId, isOpen, onClose }) => {
 							onChange={(e) => onChange(e.target.value)}
 						/>
 					)}
-					rules={{ required: true, pattern: /^(0[xX])?[A-Fa-f0-9]{42}$/ }}
+					rules={{ required: true, pattern: /^(0[xX])?[A-Fa-f0-9]{40}$/ }}
 				/>
 			</DialogForm>
 		</FormProvider>
