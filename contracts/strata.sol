@@ -4,7 +4,7 @@ pragma solidity ^0.8.15;
 //A libray that allows for some floating point math since Solidity does not support
 //floating point numbers on its own. I've not really tested it, so not entirely sure we
 //are using it right. But it will be important for calculations involving entitlement ratios.
-import "https://github.com/abdk-consulting/abdk-libraries-solidity/blob/master/ABDKMathQuad.sol";
+import "./ABDKMathQuad.sol";
 
 contract Strata {
 
@@ -366,5 +366,18 @@ contract Strata {
     //Verify that the sender of a message is the owner of a particular strata lot
     function verifySenderIsOwnerOfStrataLot(StrataLotId strataLotId) private view {
         require(units[strataLotId].currentOwnership.owner.account == msg.sender);
+    }
+
+    //request strata fee change
+    function requestStrataFeeChange(uint newStrataFee) public returns (Date) {
+        // verify sender is strata corp
+        verifySenderIsStrataCorporation();
+
+        // create a reqeust
+
+        // emit an event
+
+        // return the deadline 
+        return Date.wrap(block.timestamp + weekInSeconds);
     }
 }
