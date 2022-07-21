@@ -376,7 +376,7 @@ contract Strata {
     }
 
     //request strata fee change
-    function requestStrataFeeChange(uint newTotalMonthlyStrataFee) public returns (Date) {
+    function requestStrataFeeChange(uint newTotalMonthlyStrataFee, string memory reason) public returns (Date) {
         // verify sender is strata corp
         verifySenderIsStrataCorporation();
 
@@ -384,7 +384,7 @@ contract Strata {
         RequestId requestId = RequestId.wrap(requestIdCounter++);
         requests[requestId] = RequestItem({
             requestType: RequestType.FeeChange,
-            description: "Change total monthly strata fee", 
+            description: reason, 
             amount: newTotalMonthlyStrataFee,
             status: RequestStatus.Pending,
             approvalVoteCount: 0,

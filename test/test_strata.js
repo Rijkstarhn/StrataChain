@@ -14,7 +14,7 @@ contract("Strata", accounts=>{  // var accounts containing array of testing acco
         let strata = await Strata.deployed();
         let err = null;
         try{
-            await strata.requestStrataFeeChange.call(1000, {from: accounts[1]});    // {from: accounts[1]} means to send message as accounts[1]
+            await strata.requestStrataFeeChange.call(1000, "initial setup", {from: accounts[1]});    // {from: accounts[1]} means to send message as accounts[1]
         } catch (error){
             err = error;
             assert(error.message.indexOf('revert')>0, "transaction should be reverted")
@@ -31,7 +31,7 @@ contract("Strata", accounts=>{  // var accounts containing array of testing acco
 
         // deadline is returned correctly
         assert.equal(diffInDays, 7, 'should return 7 days from now');
-        let result = await strata.requestStrataFeeChange(1000);
+        let result = await strata.requestStrataFeeChange(1000, "initial setup");
         assert.ok(result.logs.length > 0, 'there should be some logs');
         // an event is emitted with correct info in event data
         assert.equal(result.logs[0].event, 'RequestModified', 'Event should be "RequestModified"');
@@ -41,13 +41,14 @@ contract("Strata", accounts=>{  // var accounts containing array of testing acco
         assert.equal(requestItem.amount, 1000, "amount should be 1000");
         
         // request 2 more time to see whether the request id increases correctly
-        result = await strata.requestStrataFeeChange(1111);
-        result = await strata.requestStrataFeeChange(2222);
+        result = await strata.requestStrataFeeChange(1111, "inflation");
+        result = await strata.requestStrataFeeChange(2222, "further inflation");
         assert.ok(result.logs.length > 0, 'there should be some logs');
         assert.equal(result.logs[0].args.requestId, 2, "request 3rd time should return 2");
 
         requestItem = await strata.requests(2);
         // a request has been created correctly
         assert.equal(requestItem.amount, 2222, "amount should be 2222");
+        assert.equal(requestItem.description, "further inflation", "should be further inflation");
     });
 });
