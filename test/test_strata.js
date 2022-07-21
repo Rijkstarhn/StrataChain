@@ -49,6 +49,5 @@ contract("Strata", accounts=>{  // var accounts containing array of testing acco
         requestItem = await strata.requests(2);
         // a request has been created correctly
         assert.equal(requestItem.amount, 2222, "amount should be 2222");
-        // console.log(result.logs[0].args['0'].toNumber());
     });
 });
