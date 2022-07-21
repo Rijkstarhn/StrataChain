@@ -106,7 +106,7 @@ const StrataFeeManager = ({ account }) => {
 
 				contract.events.StrataFeePaid(
 					{ fromBlock: "latest" },
-					async (event) => {
+					async (error, event) => {
 						const { strataLotId } = event.returnValues;
 						const updatedUnit = await contract.methods
 							.units(strataLotId)
@@ -121,7 +121,8 @@ const StrataFeeManager = ({ account }) => {
 
 				contract.events.RequestModified(
 					{ fromBlock: "latest" },
-					async (event) => {
+					async (error, event) => {
+						console.log(event);
 						const { requestId } = event.returnValues;
 						const updatedRequest = await contract.methods
 							.requests(requestId)
