@@ -16,7 +16,7 @@ contract Strata {
 
     //Timestamps are stored in unix time which is measured in seconds.
     //Simply add this to a date to offset the date by a week.
-    uint32 constant weekInSeconds = 7 * 24 * 60 * 60;
+    // uint32 constant weekInSeconds = 7 * 24 * 60 * 60;
 
     type StrataLotId is uint16;
     type RequestId is uint;
@@ -195,7 +195,7 @@ contract Strata {
             status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
-            voteDeadline: Date.wrap(block.timestamp + weekInSeconds)
+            voteDeadline: Date.wrap(block.timestamp + 7 days)
         });
 
         RequestId requestId = RequestId.wrap(requestIdCounter++);
@@ -369,15 +369,28 @@ contract Strata {
     }
 
     //request strata fee change
-    function requestStrataFeeChange(uint newStrataFee) public returns (Date) {
+    function requestStrataFeeChange(uint newTotalMonthlyStrataFee) public returns (Date) {
         // verify sender is strata corp
         verifySenderIsStrataCorporation();
 
         // create a reqeust
+        RequestId requestId = RequestId.wrap(requestIdCounter++);
+        requests[requestId] = RequestItem({
+            requestType: RequestType.FeeChange,
+            description: "Change total monthly strata fee", 
+            amount: newTotalMonthlyStrataFee,
+            status: RequestStatus.Pending,
+            approvalVoteCount: 0,
+            rejectionVoteCount: 0,
+            voteDeadline: Date.wrap(block.timestamp + 7 days)
+            
+        });
+        requestIds.push(requestId);
 
         // emit an event
+        emit RequestModified(requestId);
 
-        // return the deadline 
-        return Date.wrap(block.timestamp + weekInSeconds);
+        // return the deadline [TODO: may truncate the time portion?]
+        return Date.wrap(block.timestamp + 7 days);
     }
 }
