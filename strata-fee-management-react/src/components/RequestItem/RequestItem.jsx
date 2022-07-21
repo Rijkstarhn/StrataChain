@@ -17,7 +17,8 @@ const RequestItem = ({
 	requestStatus,
 	amount,
 	reason,
-	isStrataCorporation
+	isStrataCorporation,
+	voteDeadline
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
@@ -41,6 +42,7 @@ const RequestItem = ({
 
 	let withdrawFundsButton = null;
 	let updateStrataFeeButton = null;
+	let voteByDate = new Date(parseInt(voteDeadline)*1000).toDateString();
 
 	if (isStrataCorporation) {
 		if (requestStatus === "Approved") {
@@ -84,6 +86,10 @@ const RequestItem = ({
 			<div className={styles.dataField}>
 				<Typography className={styles.label}>Reason:</Typography>
 				<Typography className={styles.value}>{reason}</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>Vote by:</Typography>
+				<Typography className={styles.value}>{voteByDate}</Typography>
 			</div>
 
 			<div className={styles.dataField}>

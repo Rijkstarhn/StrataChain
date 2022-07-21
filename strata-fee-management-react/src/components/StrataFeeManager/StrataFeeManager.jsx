@@ -131,7 +131,6 @@ const StrataFeeManager = ({ account }) => {
 							...prevRequests,
 							[requestId]: updatedRequest
 						}));
-						console.log(event);
 					}
 				);
 
@@ -217,6 +216,7 @@ const StrataFeeManager = ({ account }) => {
 								requestStatus={mapRequestStatus(requestItem.status)}
 								amount={requestItem.amount}
 								reason={requestItem.description}
+								voteDeadline={requestItem.voteDeadline}
 								isStrataCorporation={isUsingStrataAccount}
 							/>
 						);
