@@ -9,6 +9,19 @@
 		"inputs": [
 			{
 				"indexed": false,
+				"internalType": "Strata.StrataLotId",
+				"name": "strataLotId",
+				"type": "uint16"
+			}
+		],
+		"name": "OwnershipTransferred",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
 				"internalType": "Strata.RequestId",
 				"name": "requestId",
 				"type": "uint256"

@@ -1,9 +1,12 @@
+// import { useState, useContext } from "react";
+
 import styles from "./SignIn.module.css";
 
 import { web3, provider } from "../../web3Utils";
 
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 
 const SignIn = ({ onSignIn }) => {
 	const onConnect = async () => {
@@ -26,7 +29,7 @@ const SignIn = ({ onSignIn }) => {
 
 	return (
 		<Container disableGutters>
-			<h1>Sign In</h1>
+			<Typography className={styles.header}>Sign In</Typography>
 			<Button onClick={onConnect}>Connect to MetaMask</Button>
 		</Container>
 	);

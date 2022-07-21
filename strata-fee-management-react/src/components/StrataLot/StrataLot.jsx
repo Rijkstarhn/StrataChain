@@ -4,11 +4,8 @@ import styles from "./StrataLot.module.css";
 
 import { web3, contract, sendTransaction } from "../../web3Utils";
 
-import Container from "@mui/material/Container";
-import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
+import Typography from "@mui/material/Typography";
 
 import { TransactionInProgressContext } from "../App/App";
 import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
@@ -19,7 +16,7 @@ const StrataLot = ({
 	entitlement,
 	strataFee,
 	strataFeeBalance,
-	ownership
+	isOwner
 }) => {
 	const [transferOwnerAddress, setTransferOwnerAddress] = useState("");
 	// const [strataFeePaymentAmount, setStrataFeePaymentAmount] = useState(0);
@@ -48,49 +45,48 @@ const StrataLot = ({
 	return (
 		<div className={styles.unitContainer}>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Lot ID: </span>
-				{lotId}
+				<Typography className={styles.label}>Lot ID:</Typography>
+				<Typography className={styles.value}>{lotId}</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Current Owner: </span>
-				{ownership.owner.account}
+				<Typography className={styles.label}>Entitlement:</Typography>
+				<Typography className={styles.value}>{entitlement}</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Entitlement: </span>
-				{entitlement}
+				<Typography className={styles.label}>Monthly Strata Fee:</Typography>
+				<Typography className={styles.value}>{strataFee} ETH</Typography>
 			</div>
 			<div className={styles.dataField}>
-				<span className={styles.label}>Monthly Strata Fee: </span>
-				{strataFee} ETH
-			</div>
-			<div className={styles.dataField}>
-				<span className={styles.label}>Balance Owed: </span>
-				{web3.utils.fromWei(strataFeeBalance, "ether")} ETH
+				<Typography className={styles.label}>Balance Owed:</Typography>
+				<Typography className={styles.value}>
+					{web3.utils.fromWei(strataFeeBalance, "ether")} ETH
+				</Typography>
 			</div>
 
-			<div className={styles.dataField}>
-				<Button onClick={() => setPayStrataFeeOpen(true)}>
-					Pay Strata Fee
-				</Button>
-			</div>
-
-			<div className={styles.dataField}>
-				<Button onClick={() => setTransferOwnerOpen(true)}>
-					Transfer Owner
-				</Button>
-			</div>
-
-			<PayStrataFeeForm
-				lotId={lotId}
-				isOpen={isPayStrataFeeOpen}
-				onClose={() => setPayStrataFeeOpen(false)}
-			/>
-
-			<TransferOwnerForm
-				lotId={lotId}
-				isOpen={isTransferOwnerOpen}
-				onClose={() => setTransferOwnerOpen(false)}
-			/>
+			{isOwner && (
+				<>
+					<div className={styles.dataField}>
+						<Button onClick={() => setPayStrataFeeOpen(true)}>
+							Pay Strata Fee
+						</Button>
+					</div>
+					<div className={styles.dataField}>
+						<Button onClick={() => setTransferOwnerOpen(true)}>
+							Transfer Owner
+						</Button>
+					</div>
+					<PayStrataFeeForm
+						lotId={lotId}
+						isOpen={isPayStrataFeeOpen}
+						onClose={() => setPayStrataFeeOpen(false)}
+					/>
+					<TransferOwnerForm
+						lotId={lotId}
+						isOpen={isTransferOwnerOpen}
+						onClose={() => setTransferOwnerOpen(false)}
+					/>
+				</>
+			)}
 		</div>
 	);
 };
