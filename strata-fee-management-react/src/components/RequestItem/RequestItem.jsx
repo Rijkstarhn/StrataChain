@@ -97,8 +97,8 @@ const RequestItem = ({
 			{updateStrataFeeButton}
 
 			<PayStrataFeeForm
-				lotId={requestId}
-				isOpen={isVoteOnRequestOpen}
+				requestId={requestId}
+                isOpen={isVoteOnRequestOpen}
 				onClose={() => setVoteOnRequestOpen(false)}
 			/>
 		</div>
