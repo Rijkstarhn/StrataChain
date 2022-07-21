@@ -73,6 +73,10 @@ contract Strata {
         uint256 amount
     );
 
+    event OwnershipTransferred(
+        StrataLotId strataLotId
+    );
+
     event StrataFeesCollected();
 
     //TODO: Apparently with a mapping, every key-value pair exists with values defaulting to zero-initialized values.
@@ -320,6 +324,7 @@ contract Strata {
                 paidExpenses: 0
             });
         unit.strataFeeBalance = 0;
+        units[strataLotId] = unit;
 
         Owner memory oldOwner = owners[msg.sender];
         --oldOwner.ownedUnitsCount;
@@ -329,6 +334,8 @@ contract Strata {
 
         ++newOwner.ownedUnitsCount;
         owners[newOwnerAccount] = newOwner;
+
+        emit OwnershipTransferred(strataLotId);
     }
 
     // refund unused strata fee as of date

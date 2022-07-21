@@ -104,26 +104,50 @@ const StrataFeeManager = ({ account }) => {
 					await refreshUnits();
 				});
 
-				contract.events.StrataFeePaid().on("data", async (event) => {
-					const { strataLotId } = event.returnValues;
-					const updatedUnit = await contract.methods.units(strataLotId).call();
-					setUnits((prevUnits) => ({
-						...prevUnits,
-						[strataLotId]: updatedUnit
-					}));
-					console.log(event);
-				});
+				contract.events.StrataFeePaid(
+					{ fromBlock: "latest" },
+					async (event) => {
+						const { strataLotId } = event.returnValues;
+						const updatedUnit = await contract.methods
+							.units(strataLotId)
+							.call();
+						setUnits((prevUnits) => ({
+							...prevUnits,
+							[strataLotId]: updatedUnit
+						}));
+						console.log(event);
+					}
+				);
 
-				contract.events.RequestModified().on("data", async (event) => {
-					const { requestId } = event.returnValues;
-					const updatedRequest = await contract.methods
-						.requests(requestId)
-						.call();
-					setRequests((prevRequests) => ({
-						...prevRequests,
-						[requestId]: updatedRequest
-					}));
-				});
+				contract.events.RequestModified(
+					{ fromBlock: "latest" },
+					async (event) => {
+						const { requestId } = event.returnValues;
+						const updatedRequest = await contract.methods
+							.requests(requestId)
+							.call();
+						setRequests((prevRequests) => ({
+							...prevRequests,
+							[requestId]: updatedRequest
+						}));
+						console.log(event);
+					}
+				);
+
+				contract.events.OwnershipTransferred(
+					{ fromBlock: "latest" },
+					async (error, event) => {
+						const { strataLotId } = event.returnValues;
+						const updatedUnit = await contract.methods
+							.units(strataLotId)
+							.call();
+						setUnits((prevUnits) => ({
+							...prevUnits,
+							[strataLotId]: updatedUnit
+						}));
+						console.log(event);
+					}
+				);
 			} catch (err) {
 				console.log(err);
 			}
