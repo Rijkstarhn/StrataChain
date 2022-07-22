@@ -25,3 +25,16 @@
 	display: flex;
 	margin-bottom: 5px;
 }
+
+.cardHeader {
+	padding-bottom: 0px;
+}
+
+.cardHeaderTitle {
+	font-size: 14pt;
+}
+
+.actions {
+	flex-direction: column;
+	align-items: flex-start;
+}

@@ -6,6 +6,10 @@ import { web3, contract, sendTransaction } from "../../web3Utils";
 
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
 
 import { TransactionInProgressContext } from "../App/App";
 import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
@@ -43,28 +47,31 @@ const StrataLot = ({
 	};
 
 	return (
-		<div className={styles.unitContainer}>
-			<div className={styles.dataField}>
-				<Typography className={styles.label}>Lot ID:</Typography>
-				<Typography className={styles.value}>{lotId}</Typography>
-			</div>
-			<div className={styles.dataField}>
-				<Typography className={styles.label}>Entitlement:</Typography>
-				<Typography className={styles.value}>{entitlement}</Typography>
-			</div>
-			<div className={styles.dataField}>
-				<Typography className={styles.label}>Monthly Strata Fee:</Typography>
-				<Typography className={styles.value}>{strataFee} ETH</Typography>
-			</div>
-			<div className={styles.dataField}>
-				<Typography className={styles.label}>Balance Owed:</Typography>
-				<Typography className={styles.value}>
-					{web3.utils.fromWei(strataFeeBalance, "ether")} ETH
-				</Typography>
-			</div>
+		<Card variant="outlined">
+			<CardHeader
+				title={`Unit ${lotId}`}
+				titleTypographyProps={{ className: styles.cardHeaderTitle }}
+				className={styles.cardHeader}
+			/>
+			<CardContent>
+				<div className={styles.dataField}>
+					<Typography className={styles.label}>Entitlement:</Typography>
+					<Typography className={styles.value}>{entitlement}</Typography>
+				</div>
+				<div className={styles.dataField}>
+					<Typography className={styles.label}>Monthly Strata Fee:</Typography>
+					<Typography className={styles.value}>{strataFee} ETH</Typography>
+				</div>
+				<div className={styles.dataField}>
+					<Typography className={styles.label}>Balance Owed:</Typography>
+					<Typography className={styles.value}>
+						{web3.utils.fromWei(strataFeeBalance, "ether")} ETH
+					</Typography>
+				</div>
+			</CardContent>
 
 			{isOwner && (
-				<>
+				<CardActions disableSpacing className={styles.actions}>
 					<div className={styles.dataField}>
 						<Button onClick={() => setPayStrataFeeOpen(true)}>
 							Pay Strata Fee
@@ -85,9 +92,9 @@ const StrataLot = ({
 						isOpen={isTransferOwnerOpen}
 						onClose={() => setTransferOwnerOpen(false)}
 					/>
-				</>
+				</CardActions>
 			)}
-		</div>
+		</Card>
 	);
 };
 
