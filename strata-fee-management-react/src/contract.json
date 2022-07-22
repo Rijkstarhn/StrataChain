@@ -183,14 +183,14 @@
 				"type": "uint8"
 			},
 			{
-				"internalType": "uint8",
+				"internalType": "uint16",
 				"name": "approvalVoteCount",
-				"type": "uint8"
+				"type": "uint16"
 			},
 			{
-				"internalType": "uint8",
+				"internalType": "uint16",
 				"name": "rejectionVoteCount",
-				"type": "uint8"
+				"type": "uint16"
 			},
 			{
 				"internalType": "Strata.Date",
@@ -387,11 +387,6 @@
 				"internalType": "bool",
 				"name": "supportsRequest",
 				"type": "bool"
-			},
-			{
-				"internalType": "Strata.StrataLotId",
-				"name": "strataLotId",
-				"type": "uint16"
 			}
 		],
 		"name": "voteOnRequest",

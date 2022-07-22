@@ -2,14 +2,12 @@ import { useState, useContext } from "react";
 
 import styles from "./RequestItem.module.css";
 
-import { web3, contract, sendTransaction } from "../../web3Utils";
-
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import { TransactionInProgressContext } from "../App/App";
-import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
-import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
+
+import VoteRequestForm from "../VoteRequestForm/VoteRequestForm";
 
 const RequestItem = ({
 	requestId,
@@ -17,7 +15,9 @@ const RequestItem = ({
 	requestStatus,
 	amount,
 	reason,
-	isStrataCorporation
+	isStrataCorporation,
+    yesCounts,
+    noCounts,
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
@@ -32,9 +32,9 @@ const RequestItem = ({
 	// 	);
 	// };
 
-	// const handleTransferOwner = async (newOwnerAccount) => {
+	// const handleVoteRequest = async (newOwnerAccount) => {
 	// 	await sendTransaction(
-	// 		contract.methods.transferOwner(lotId, newOwnerAccount),
+	// 		contract.methods.voteOnRequest(requestId, supportsRequest),
 	// 		setTransactionInProgress
 	// 	);
 	// };
@@ -85,6 +85,14 @@ const RequestItem = ({
 				<Typography className={styles.label}>Reason:</Typography>
 				<Typography className={styles.value}>{reason}</Typography>
 			</div>
+            <div className={styles.dataField}>
+				<Typography className={styles.label}>Yes Counts:</Typography>
+				<Typography className={styles.value}>{yesCounts}</Typography>
+			</div>
+            <div className={styles.dataField}>
+				<Typography className={styles.label}>No Counts:</Typography>
+				<Typography className={styles.value}>{noCounts}</Typography>
+			</div>
 
 			<div className={styles.dataField}>
 				<Button onClick={() => setVoteOnRequestOpen(true)}>
@@ -96,11 +104,11 @@ const RequestItem = ({
 
 			{updateStrataFeeButton}
 
-			<PayStrataFeeForm
-				requestId={requestId}
+            <VoteRequestForm
+                requestId={requestId}
                 isOpen={isVoteOnRequestOpen}
 				onClose={() => setVoteOnRequestOpen(false)}
-			/>
+            />
 		</div>
 	);
 };

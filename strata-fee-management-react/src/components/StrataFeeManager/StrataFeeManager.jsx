@@ -77,6 +77,7 @@ const StrataFeeManager = ({ account }) => {
 							.units(strataLotId)
 							.call();
 					}
+                    console.log("units", units);
 
 					setUnits(units);
 				};
@@ -193,6 +194,8 @@ const StrataFeeManager = ({ account }) => {
 								amount={requestItem.amount}
 								reason={requestItem.description}
 								isStrataCorporation={isUsingStrataAccount}
+                                yesCounts = {requestItem.approvalVoteCount}
+                                noCounts = {requestItem.rejectionVoteCount}
 							/>
 						);
 					})}

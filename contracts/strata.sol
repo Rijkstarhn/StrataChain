@@ -59,8 +59,8 @@ contract Strata {
         string description;
         uint256 amount;
         RequestStatus status;
-        uint8 approvalVoteCount;
-        uint8 rejectionVoteCount;
+        uint16 approvalVoteCount;
+        uint16 rejectionVoteCount;
         Date voteDeadline;
     }
 
@@ -82,7 +82,7 @@ contract Strata {
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
     mapping(RequestId => RequestItem) public requests;
-    mapping(RequestId => mapping(StrataLotId => bool)) private requestVoters;
+    mapping(RequestId => mapping(address => bool)) private requestVoters;
 
     //This is necessary because apparently you cannot directly iterate through entries in a mapping.
     StrataLotId[] public strataLotIds;
@@ -215,11 +215,11 @@ contract Strata {
 
             if (requestItem.amount < owner.autoApproveThreshold) {
                 ++requestItem.approvalVoteCount;
-                requestVoters[requestId][strataLotId] = true;
+                requestVoters[requestId][msg.sender] = true;
             }
             else if (requestItem.amount > owner.autoRejectThreshold) {
                 ++requestItem.rejectionVoteCount;
-                requestVoters[requestId][strataLotId] = true;
+                requestVoters[requestId][msg.sender] = true;
             }
 
         }
@@ -268,20 +268,20 @@ contract Strata {
     }
 
     // vote
-    function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId strataLotId) public {
-        verifySenderIsOwnerOfStrataLot(strataLotId);
-        require(requestVoters[requestId][strataLotId] == false);
-
+    function voteOnRequest(RequestId requestId, bool supportsRequest) public {
+        require(requestVoters[requestId][msg.sender] == false);
+        require(owners[msg.sender].ownedUnitsCount > 0);
         RequestItem memory requestItem = requests[requestId];
         
         if (supportsRequest) {
-            ++requestItem.approvalVoteCount;
+            requestItem.approvalVoteCount += owners[msg.sender].ownedUnitsCount;
         }
         else {
-            ++requestItem.rejectionVoteCount;
+            requestItem.rejectionVoteCount += owners[msg.sender].ownedUnitsCount;
         }
-
-        requestVoters[requestId][strataLotId] = true;
+        requestVoters[requestId][msg.sender] = true;
+        requests[requestId] = requestItem;
+        emit RequestModified(requestId);
     }
 
     function setAutoApproveThreshold(uint256 amount) public {

@@ -1,16 +1,15 @@
 import { useContext } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 
-import styles from "./PayStrataFeeForm.module.css";
-
 import { web3, contract, sendTransaction } from "../../web3Utils";
 
-import OutlinedInput from "@mui/material/OutlinedInput";
+import Select from "@mui/material/Select";
+import MenuItem from '@mui/material/MenuItem';
 
 import { TransactionInProgressContext } from "../App/App";
 import DialogForm from "../DialogForm/DialogForm";
 
-export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
+export const VoteRequestForm = ({ requestId, isOpen, onClose }) => {
 	const methods = useForm({
 		mode: "onChange"
 	});
@@ -18,12 +17,11 @@ export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
 
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
-	const handlePayStrataFee = async (data) => {
-		const weiToSend = web3.utils.toWei(data.amount, "ether");
-		await sendTransaction(
-			contract.methods.payStrataFee(lotId),
-			setTransactionInProgress,
-			{ value: weiToSend }
+	const handleVoteRequest = async (data) => {
+        let supportsRequest = data.amount === 1? true : false
+        await sendTransaction(
+			contract.methods.voteOnRequest(requestId, supportsRequest),
+			setTransactionInProgress
 		);
 	};
 
@@ -32,19 +30,22 @@ export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
 			<DialogForm
 				isOpen={isOpen}
 				onClose={onClose}
-				title={`Payment Information for Lot ID ${lotId}`}
-				onSubmit={handlePayStrataFee}
+				title={`Vote for Request ${requestId}`}
+				onSubmit={handleVoteRequest}
 			>
-				<span>Amount</span>
+				<span>Vote for</span>
 				<Controller
 					control={control}
 					name="amount"
 					render={({ field: { onChange } }) => (
-						<OutlinedInput
-							type="number"
-							defaultValue={0}
+						<Select
+                            label="Option"
+                            // value={option}
 							onChange={(e) => onChange(e.target.value)}
-						/>
+						>
+                            <MenuItem value={0}>No</MenuItem>
+                            <MenuItem value={1}>Yes</MenuItem>
+                        </Select>
 					)}
 					rules={{ required: true, min: 0 }}
 				/>
@@ -53,4 +54,4 @@ export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
 	);
 };
 
-export default PayStrataFeeForm;
+export default VoteRequestForm;
