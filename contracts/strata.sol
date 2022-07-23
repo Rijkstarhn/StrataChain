@@ -239,36 +239,11 @@ contract Strata {
     function withdraw(RequestId requestId) public returns (RequestStatus) {
         verifySenderIsStrataCorporation();
 
-        RequestItem memory requestItem = requests[requestId];
-
-        //If more than half of all units approved, so end vote early
-        if (requestItem.approvalVoteCount >= strataLotIds.length) {
-            // delete requests[requestId];
-            payable(strataAccount).transfer(requestItem.amount);
-            return RequestStatus.Approved;
+        RequestStatus status = voteResult(requestId);
+        if (status == RequestStatus.Approved){
+            payable(strataAccount).transfer(requests[requestId].amount);
         }
-
-        //If more than half of all units rejected, so end vote early
-        if (requestItem.rejectionVoteCount > strataLotIds.length) {
-            // delete requests[requestId];
-            return RequestStatus.Rejected;
-        }
-
-        //If vote is not over
-        if (block.timestamp < Date.unwrap(requestItem.voteDeadline)) {
-            return RequestStatus.Pending;
-        }
-
-        //Vote is now over, so delete the expense
-        // delete requests[requestId];
-
-        //If more voters approved than rejected, then approve the expense
-        if (requestItem.approvalVoteCount >= requestItem.rejectionVoteCount) {
-            payable(strataAccount).transfer(requestItem.amount);
-            return RequestStatus.Approved;
-        }
-
-        return RequestStatus.Rejected;
+        return status;
     }
 
     // vote
@@ -276,13 +251,11 @@ contract Strata {
         verifySenderIsOwnerOfStrataLot(strataLotId);
         require(requestVoters[requestId][strataLotId] == false);
 
-        RequestItem memory requestItem = requests[requestId];
-        
         if (supportsRequest) {
-            ++requestItem.approvalVoteCount;
+            ++requests[requestId].approvalVoteCount;
         }
         else {
-            ++requestItem.rejectionVoteCount;
+            ++requests[requestId].rejectionVoteCount;
         }
 
         requestVoters[requestId][strataLotId] = true;
@@ -377,6 +350,10 @@ contract Strata {
 
     //request strata fee change
     function requestStrataFeeChange(uint newTotalMonthlyStrataFee, string memory reason) public returns (Date) {
+        return requestStrataFeeChange(newTotalMonthlyStrataFee, reason, 7 days);
+    }
+
+    function requestStrataFeeChange(uint newTotalMonthlyStrataFee, string memory reason, uint votingPeriod) public returns (Date) {
         // verify sender is strata corp
         verifySenderIsStrataCorporation();
 
@@ -389,7 +366,7 @@ contract Strata {
             status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
-            voteDeadline: Date.wrap(block.timestamp + 7 days)
+            voteDeadline: Date.wrap(block.timestamp + votingPeriod)
             
         });
         requestIds.push(requestId);
@@ -398,6 +375,53 @@ contract Strata {
         emit RequestModified(requestId);
 
         // return the deadline [TODO: may truncate the time portion?]
-        return Date.wrap(block.timestamp + 7 days);
+        return Date.wrap(block.timestamp + votingPeriod);
+    }
+
+    // confirm strata fee change - effective immediately
+    function confirmStrataFeeChange(RequestId requestId) public returns (RequestStatus) {
+        // verify sender is strata corp
+        verifySenderIsStrataCorporation();
+
+        RequestStatus status = voteResult(requestId);
+        if (status == RequestStatus.Approved){
+            requests[requestId].status = RequestStatus.Approved;
+            totalMonthlyStrataFee = requests[requestId].amount;
+        } else if (status == RequestStatus.Rejected){
+            requests[requestId].status = RequestStatus.Rejected;
+        }
+        return status;
+    }
+
+    function voteResult(RequestId requestId) private view returns (RequestStatus){
+        RequestItem memory requestItem = requests[requestId];
+        uint majority = uint(strataLotIds.length >> 1) + 1;
+
+        //If more than half of all units approved, so end vote early
+        if (requestItem.approvalVoteCount >= majority) {
+            // delete requests[requestId];
+            return RequestStatus.Approved;
+        }
+
+        //If more than half of all units rejected, so end vote early
+        if (requestItem.rejectionVoteCount > strataLotIds.length - majority) {
+            // delete requests[requestId];
+            return RequestStatus.Rejected;
+        }
+
+        //If vote is not over
+        if (block.timestamp < Date.unwrap(requestItem.voteDeadline)) {
+            return RequestStatus.Pending;
+        }
+
+        //Vote is now over, so delete the expense
+        // delete requests[requestId];
+
+        //If more voters approved than rejected, then approve the expense
+        if (requestItem.approvalVoteCount > requestItem.rejectionVoteCount) {
+            return RequestStatus.Approved;
+        }
+
+        return RequestStatus.Rejected;
     }
 }
