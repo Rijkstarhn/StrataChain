@@ -100,7 +100,7 @@ contract Strata {
     
     constructor() {
         strataAccount = msg.sender;
-        totalMonthlyStrataFee = 1000;
+        totalMonthlyStrataFee = 30 ether;
 
         totalEntitlement = 600;
 
@@ -325,6 +325,7 @@ contract Strata {
     function multiplyByEntitlementRatio(StrataLotId strataLotId, uint256 amount) private view returns (uint256) {
         //Type conversions are supposedly expensive on gas.
         //We might wish to keep everything as floating point numbers as much as possible
+        //Another possible approach: store fees per entitlement, then only multiply is needed and floating point is not needed.
         return ABDKMathQuad.toUInt(
             ABDKMathQuad.mul(
                 ABDKMathQuad.div(

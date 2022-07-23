@@ -32,10 +32,6 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 	// 	console.log("expense request sent");
 	// };
 
-	const handleStrataFeeChangeRequest = () => {
-		console.log("strata fee change request sent");
-	};
-
 	return (
 		<>
 			<Typography className={styles.header}>

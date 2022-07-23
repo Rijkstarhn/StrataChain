@@ -454,5 +454,53 @@
       ],
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newTotalMonthlyStrataFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "votingPeriod",
+          "type": "uint256"
+        }
+      ],
+      "name": "requestStrataFeeChange",
+      "outputs": [
+        {
+          "internalType": "Strata.Date",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "Strata.RequestId",
+          "name": "requestId",
+          "type": "uint256"
+        }
+      ],
+      "name": "confirmStrataFeeChange",
+      "outputs": [
+        {
+          "internalType": "enum Strata.RequestStatus",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
     }
   ]

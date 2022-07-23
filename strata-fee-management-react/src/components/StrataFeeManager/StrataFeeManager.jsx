@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext } from "react";
 
 import { web3, contract } from "../../web3Utils";
 
@@ -8,9 +8,11 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 
-import StrataCorproation from "../StrataCorporation/StrataCorporation";
+import StrataCorporation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
 import RequestItem from "../RequestItem/RequestItem";
+
+export const TriggerRefreshContext = createContext();
 
 const mapRequestType = (requestTypeEnum) => {
 	switch (requestTypeEnum) {
@@ -41,6 +43,11 @@ const StrataFeeManager = ({ account }) => {
 	const [autoRejectThreshold, setAutoRejectThreshold] = useState(0);
 	const [units, setUnits] = useState({});
 	const [requests, setRequests] = useState({});
+	const [trigger, setTrigger] = useState(false);
+
+	const triggerRefresh = ()=>{
+		setTrigger(!trigger);
+	}
 
 	useEffect(() => {
 		(async () => {
@@ -152,15 +159,20 @@ const StrataFeeManager = ({ account }) => {
 				console.log(err);
 			}
 		})();
-	}, [account]);
+	}, [account, trigger]);
 
 	const isUsingStrataAccount = account === strataAccount;
 
+	const ownedUnits = Object.keys(units)
+	.filter(
+		(strataLotId) =>
+			units[strataLotId].currentOwnership.owner.account === account
+	);
 	return (
-		<>
+		<TriggerRefreshContext.Provider value={triggerRefresh}>
 			{isUsingStrataAccount && (
 				<Container disableGutters>
-					<StrataCorproation
+					<StrataCorporation
 						totalMonthlyStrataFee={totalMonthlyStrataFee}
 						units={units}
 					/>
@@ -219,6 +231,7 @@ const StrataFeeManager = ({ account }) => {
 								reason={requestItem.description}
 								voteDeadline={requestItem.voteDeadline}
 								isStrataCorporation={isUsingStrataAccount}
+								isOwner={ownedUnits.length>0}
 							/>
 						);
 					})}
@@ -227,11 +240,7 @@ const StrataFeeManager = ({ account }) => {
 			<Container disableGutters>
 				<Typography className={styles.subHeader}>Owned Units</Typography>
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
-					{Object.keys(units)
-						.filter(
-							(strataLotId) =>
-								units[strataLotId].currentOwnership.owner.account === account
-						)
+					{ownedUnits
 						.map((strataLotId) => {
 							const unit = units[strataLotId];
 							return (
@@ -247,7 +256,7 @@ const StrataFeeManager = ({ account }) => {
 						})}
 				</Stack>
 			</Container>
-		</>
+		</TriggerRefreshContext.Provider>
 	);
 };
 
