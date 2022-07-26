@@ -2,8 +2,6 @@ import { useState, useContext } from "react";
 
 import styles from "./RequestItem.module.css";
 
-import { web3, contract, sendTransaction } from "../../web3Utils";
-
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
@@ -12,9 +10,14 @@ import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 
 import { TransactionInProgressContext } from "../App/App";
+
+
+import VoteRequestForm from "../VoteRequestForm/VoteRequestForm";
+
 import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
 import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
 import { TriggerRefreshContext } from "../StrataFeeManager/StrataFeeManager";
+
 
 const RequestItem = ({
 	requestId,
@@ -23,6 +26,8 @@ const RequestItem = ({
 	amount,
 	reason,
 	isStrataCorporation,
+  yesCounts,
+  noCounts,
 	voteDeadline,
 	isOwner
 }) => {
@@ -39,9 +44,9 @@ const RequestItem = ({
 	// 	);
 	// };
 
-	// const handleTransferOwner = async (newOwnerAccount) => {
+	// const handleVoteRequest = async (newOwnerAccount) => {
 	// 	await sendTransaction(
-	// 		contract.methods.transferOwner(lotId, newOwnerAccount),
+	// 		contract.methods.voteOnRequest(requestId, supportsRequest),
 	// 		setTransactionInProgress
 	// 	);
 	// };
@@ -107,6 +112,14 @@ const RequestItem = ({
 					<Typography className={styles.label}>Reason:</Typography>
 					<Typography className={styles.value}>{reason}</Typography>
 				</div>
+        <div className={styles.dataField}>
+					<Typography className={styles.label}>Yes Counts:</Typography>
+					<Typography className={styles.value}>{yesCounts}</Typography>
+				</div>
+        <div className={styles.dataField}>
+					<Typography className={styles.label}>No Counts:</Typography>
+					<Typography className={styles.value}>{noCounts}</Typography>
+				</div>
 				<div className={styles.dataField}>
 					<Typography className={styles.label}>Vote by:</Typography>
 					<Typography className={styles.value}>{voteByDate}</Typography>
@@ -126,9 +139,9 @@ const RequestItem = ({
 				{updateStrataFeeButton}
 			</CardActions>
 
-			<PayStrataFeeForm
-				lotId={requestId}
-				isOpen={isVoteOnRequestOpen}
+            <VoteRequestForm
+                requestId={requestId}
+                isOpen={isVoteOnRequestOpen}
 				onClose={() => setVoteOnRequestOpen(false)}
 			/>
 		</Card>
