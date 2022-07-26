@@ -21,7 +21,7 @@ export const RequestStrataFeeChangeForm = ({ isOpen, onClose }) => {
 
 	const handleStrataFeeChangeRequest = async (data) => {
 		await sendTransaction(
-			contract.methods.requestWithdrawal(data.amount, data.reason),
+			contract.methods.requestStrataFeeChange(data.amount, data.reason),
 			setTransactionInProgress
 		);
 	};

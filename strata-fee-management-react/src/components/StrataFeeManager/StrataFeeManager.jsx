@@ -105,26 +105,50 @@ const StrataFeeManager = ({ account }) => {
 					await refreshUnits();
 				});
 
-				contract.events.StrataFeePaid().on("data", async (event) => {
-					const { strataLotId } = event.returnValues;
-					const updatedUnit = await contract.methods.units(strataLotId).call();
-					setUnits((prevUnits) => ({
-						...prevUnits,
-						[strataLotId]: updatedUnit
-					}));
-					console.log(event);
-				});
+				contract.events.StrataFeePaid(
+					{ fromBlock: "latest" },
+					async (error, event) => {
+						const { strataLotId } = event.returnValues;
+						const updatedUnit = await contract.methods
+							.units(strataLotId)
+							.call();
+						setUnits((prevUnits) => ({
+							...prevUnits,
+							[strataLotId]: updatedUnit
+						}));
+						console.log(event);
+					}
+				);
 
-				contract.events.RequestModified().on("data", async (event) => {
-					const { requestId } = event.returnValues;
-					const updatedRequest = await contract.methods
-						.requests(requestId)
-						.call();
-					setRequests((prevRequests) => ({
-						...prevRequests,
-						[requestId]: updatedRequest
-					}));
-				});
+				contract.events.RequestModified(
+					{ fromBlock: "latest" },
+					async (error, event) => {
+						console.log(event);
+						const { requestId } = event.returnValues;
+						const updatedRequest = await contract.methods
+							.requests(requestId)
+							.call();
+						setRequests((prevRequests) => ({
+							...prevRequests,
+							[requestId]: updatedRequest
+						}));
+					}
+				);
+
+				contract.events.OwnershipTransferred(
+					{ fromBlock: "latest" },
+					async (error, event) => {
+						const { strataLotId } = event.returnValues;
+						const updatedUnit = await contract.methods
+							.units(strataLotId)
+							.call();
+						setUnits((prevUnits) => ({
+							...prevUnits,
+							[strataLotId]: updatedUnit
+						}));
+						console.log(event);
+					}
+				);
 			} catch (err) {
 				console.log(err);
 			}
@@ -185,6 +209,7 @@ const StrataFeeManager = ({ account }) => {
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
 					{Object.keys(requests).map((requestId) => {
 						const requestItem = requests[requestId];
+						console.log(requestItem)
 						return (
 							<RequestItem
 								key={requestId}
@@ -193,6 +218,7 @@ const StrataFeeManager = ({ account }) => {
 								requestStatus={mapRequestStatus(requestItem.status)}
 								amount={requestItem.amount}
 								reason={requestItem.description}
+								voteDeadline={requestItem.voteDeadline}
 								isStrataCorporation={isUsingStrataAccount}
                                 yesCounts = {requestItem.approvalVoteCount}
                                 noCounts = {requestItem.rejectionVoteCount}

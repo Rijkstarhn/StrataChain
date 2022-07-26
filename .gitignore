@@ -1,0 +1,4 @@
+build/
+contracts/artifacts/
+remix-compiler.config.js
+src/contractaddress.js

@@ -1,5 +1,5 @@
 import Web3 from "web3";
-
+import contractAddress from "./contractaddress";
 const detectCurrentProvider = () => {
 	let provider;
 	if (window.ethereum) {
@@ -33,7 +33,6 @@ const createWeb3Instance = () => {
 	return undefined;
 };
 
-const contractAddress = "0x7E63346E910aadf8aFd2aFDe4b9DfF7909048392";
 const contractAbi = require("./contract.json");
 
 export const provider = detectCurrentProvider();
