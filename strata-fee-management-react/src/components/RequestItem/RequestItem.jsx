@@ -11,7 +11,13 @@ import CardHeader from "@mui/material/CardHeader";
 
 import { TransactionInProgressContext } from "../App/App";
 
+
 import VoteRequestForm from "../VoteRequestForm/VoteRequestForm";
+
+import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
+import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
+import { TriggerRefreshContext } from "../StrataFeeManager/StrataFeeManager";
+
 
 const RequestItem = ({
 	requestId,
@@ -22,12 +28,13 @@ const RequestItem = ({
 	isStrataCorporation,
   yesCounts,
   noCounts,
-	voteDeadline
+	voteDeadline,
+	isOwner
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
-
+	const triggerRefresh = useContext(TriggerRefreshContext);
 	// const handlePayStrataFee = async (amount) => {
 	// 	const weiToSend = web3.utils.toWei(amount, "ether");
 	// 	await sendTransaction(
@@ -44,6 +51,15 @@ const RequestItem = ({
 	// 	);
 	// };
 
+	const handleRefreshStrataFeeChangeRequest = async () => {
+		await sendTransaction(
+			contract.methods.confirmStrataFeeChange(requestId),
+			setTransactionInProgress,
+
+		);
+		triggerRefresh();
+	}
+
 	let withdrawFundsButton = null;
 	let updateStrataFeeButton = null;
 	let voteByDate = new Date(parseInt(voteDeadline) * 1000).toDateString();
@@ -53,22 +69,25 @@ const RequestItem = ({
 			if (requestType === "Expense") {
 				withdrawFundsButton = (
 					<div className={styles.dataField}>
-						<Button onClick={() => {}}>Withdraw Funds</Button>
-					</div>
-				);
-			} else if (requestType === "Strata Fee Change") {
-				updateStrataFeeButton = (
-					<div className={styles.dataField}>
-						<Button onClick={() => {}}>Update Strata Fee</Button>
+						<Button onClick={() => { }}>Withdraw Funds</Button>
 					</div>
 				);
 			}
 		} else if (requestStatus === "Pending") {
 			//TODO: We could potentially support having the strata decline a request
 			//if they no longer need it
+			if (requestType === "Strata Fee Change") {
+				updateStrataFeeButton = (
+					<div className={styles.dataField}>
+						<Button onClick={() => handleRefreshStrataFeeChangeRequest()}>Refresh Status</Button>
+					</div>
+				);
+
+			}
 		}
 	}
 
+	amount = web3.utils.fromWei(amount, "ether");
 	return (
 		<Card variant="outlined">
 			<CardHeader
@@ -87,7 +106,7 @@ const RequestItem = ({
 				</div>
 				<div className={styles.dataField}>
 					<Typography className={styles.label}>Amount:</Typography>
-					<Typography className={styles.value}>{amount}</Typography>
+					<Typography className={styles.value}>{amount} ETH</Typography>
 				</div>
 				<div className={styles.dataField}>
 					<Typography className={styles.label}>Reason:</Typography>
@@ -108,12 +127,13 @@ const RequestItem = ({
 			</CardContent>
 
 			<CardActions disableSpacing className={styles.actions}>
-				<div className={styles.dataField}>
-					<Button onClick={() => setVoteOnRequestOpen(true)}>
-						Vote on Request
-					</Button>
-				</div>
-
+				{isOwner &&
+					<div className={styles.dataField}>
+						<Button onClick={() => setVoteOnRequestOpen(true)}>
+							Vote on Request
+						</Button>
+					</div>
+				}
 				{withdrawFundsButton}
 
 				{updateStrataFeeButton}

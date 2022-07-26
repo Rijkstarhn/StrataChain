@@ -1,4 +1,4 @@
 build/
 contracts/artifacts/
 remix-compiler.config.js
-src/contractaddress.js
+strata-fee-management-react/src/contractaddress.js
