@@ -11,6 +11,7 @@ import CardHeader from "@mui/material/CardHeader";
 
 import { TransactionInProgressContext } from "../App/App";
 
+import { web3, contract, sendTransaction } from "../../web3Utils";
 
 import VoteRequestForm from "../VoteRequestForm/VoteRequestForm";
 
