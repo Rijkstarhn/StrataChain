@@ -221,7 +221,6 @@ const StrataFeeManager = ({ account }) => {
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
 					{Object.keys(requests).map((requestId) => {
 						const requestItem = requests[requestId];
-						console.log(requestItem)
 						return (
 							<RequestItem
 								key={requestId}
@@ -232,9 +231,10 @@ const StrataFeeManager = ({ account }) => {
 								reason={requestItem.description}
 								voteDeadline={requestItem.voteDeadline}
 								isStrataCorporation={isUsingStrataAccount}
-                yesCounts = {requestItem.approvalVoteCount}
-                noCounts = {requestItem.rejectionVoteCount}
+                                yesCounts = {requestItem.approvalVoteCount}
+                                noCounts = {requestItem.rejectionVoteCount}
 								isOwner={ownedUnits.length>0}
+                                ownedUnits={ownedUnits}
 							/>
 						);
 					})}

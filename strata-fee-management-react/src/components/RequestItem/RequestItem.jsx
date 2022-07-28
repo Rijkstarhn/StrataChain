@@ -27,10 +27,11 @@ const RequestItem = ({
 	amount,
 	reason,
 	isStrataCorporation,
-  yesCounts,
-  noCounts,
+    yesCounts,
+    noCounts,
 	voteDeadline,
-	isOwner
+	isOwner,
+    ownedUnits
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
@@ -64,7 +65,8 @@ const RequestItem = ({
 	let withdrawFundsButton = null;
 	let updateStrataFeeButton = null;
 	let voteByDate = new Date(parseInt(voteDeadline) * 1000).toDateString();
-
+    let strataIds = [12,34,56];
+    
 	if (isStrataCorporation) {
 		if (requestStatus === "Approved") {
 			if (requestType === "Expense") {
@@ -144,6 +146,7 @@ const RequestItem = ({
                 requestId={requestId}
                 isOpen={isVoteOnRequestOpen}
 				onClose={() => setVoteOnRequestOpen(false)}
+                strataIds={ownedUnits}
 			/>
 		</Card>
 	);
