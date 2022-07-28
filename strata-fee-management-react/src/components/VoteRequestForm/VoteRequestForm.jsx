@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { TransactionInProgressContext } from "../App/App";
 import DialogForm from "../DialogForm/DialogForm";
 
-export const VoteRequestForm = ({ requestId, isOpen, onClose }) => {
+export const VoteRequestForm = ({ requestId, isOpen, onClose, strataIds }) => {
 	const methods = useForm({
 		mode: "onChange"
 	});
@@ -20,7 +20,7 @@ export const VoteRequestForm = ({ requestId, isOpen, onClose }) => {
 	const handleVoteRequest = async (data) => {
         let supportsRequest = data.amount === 1? true : false
         await sendTransaction(
-			contract.methods.voteOnRequest(requestId, supportsRequest),
+			contract.methods.voteOnRequest(requestId, supportsRequest, strataIds),
 			setTransactionInProgress
 		);
 	};
@@ -33,6 +33,14 @@ export const VoteRequestForm = ({ requestId, isOpen, onClose }) => {
 				title={`Vote for Request ${requestId}`}
 				onSubmit={handleVoteRequest}
 			>
+                <span>Strata Lot Ids:</span>
+                <div>
+                    {strataIds.map((strataId) => {
+                        return(
+                            <span key = {strataId} className="space-margin">{strataId}</span>
+                        )
+                    })}
+                </div>
 				<span>Vote for</span>
 				<Controller
 					control={control}
@@ -40,7 +48,6 @@ export const VoteRequestForm = ({ requestId, isOpen, onClose }) => {
 					render={({ field: { onChange } }) => (
 						<Select
                             label="Option"
-                            // value={option}
 							onChange={(e) => onChange(e.target.value)}
 						>
                             <MenuItem value={0}>No</MenuItem>
