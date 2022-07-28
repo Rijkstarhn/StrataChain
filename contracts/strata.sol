@@ -1,11 +1,6 @@
 pragma solidity ^0.8.15;
 //SPDX-License-Identifier: MIT
 
-//A libray that allows for some floating point math since Solidity does not support
-//floating point numbers on its own. I've not really tested it, so not entirely sure we
-//are using it right. But it will be important for calculations involving entitlement ratios.
-import "./ABDKMathQuad.sol";
-
 contract Strata {
 
     //TODO: Was reading into it a bit and it turns out storing data is expensive.
@@ -17,6 +12,8 @@ contract Strata {
     //Timestamps are stored in unix time which is measured in seconds.
     //Simply add this to a date to offset the date by a week.
     // uint32 constant weekInSeconds = 7 * 24 * 60 * 60;
+
+    /// TYPES
 
     type StrataLotId is uint16;
     type RequestId is uint;
@@ -64,6 +61,7 @@ contract Strata {
         Date voteDeadline;
     }
 
+    /// EVENTS
     event RequestModified(
         RequestId requestId
     );
@@ -77,12 +75,16 @@ contract Strata {
         StrataLotId strataLotId
     );
 
-    event StrataFeesCollected();
+    event StrataFeesCollected(
+        uint256 date,
+        uint dayCount
+    );
 
     //TODO: Apparently with a mapping, every key-value pair exists with values defaulting to zero-initialized values.
     //Because of this, we need to be careful about what assumptions we are making when we want to check if an
     //item exists in the map. For this, we'd basically need to check some portion of the value struct to see if it is valid or not
-
+    
+    /// VARIABLES
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
     mapping(RequestId => RequestItem) public requests;
@@ -93,15 +95,17 @@ contract Strata {
     RequestId[] public requestIds;
 
     address public strataAccount;
-    uint256 public totalMonthlyStrataFee;
+    
+    uint256 public dailyStrataFeePerEntitlement;
+    uint256 public lastStrataFeeCollectedDate;
     uint16 totalEntitlement;
 
     uint requestIdCounter;
     
     constructor() {
         strataAccount = msg.sender;
-        totalMonthlyStrataFee = 30 ether;
-
+        dailyStrataFeePerEntitlement = 10000 gwei;
+        lastStrataFeeCollectedDate = block.timestamp / 1 days;
         totalEntitlement = 600;
 
         requestIdCounter = 0;
@@ -175,16 +179,23 @@ contract Strata {
 
     function collectStrataFeePayments() public {
         verifySenderIsStrataCorporation();
-
+        uint256 date = (block.timestamp / 1 days);
+        uint dayCount = (date - lastStrataFeeCollectedDate);
+        uint256 strataFeePerEntitlement =dayCount  * dailyStrataFeePerEntitlement;
         for (uint i; i < strataLotIds.length; ++i) {
             StrataLotId strataLotId = strataLotIds[i];
-
-            uint256 balanceToAdd = multiplyByEntitlementRatio(strataLotId, totalMonthlyStrataFee);
+            
+            uint256 balanceToAdd = units[strataLotId].entitlement * strataFeePerEntitlement;
             
             units[strataLotId].strataFeeBalance += int256(balanceToAdd);
         }
 
-        emit StrataFeesCollected();
+        emit StrataFeesCollected(date, dayCount );
+    }
+
+    // TODO: this is just for testing
+    function testSetLastStrataFeeCollectedDate(uint8 day) public {
+       lastStrataFeeCollectedDate =  (block.timestamp / 1 days) - day;
     }
 
     // request withdrawal - returns the deadline date of vote
@@ -325,18 +336,6 @@ contract Strata {
         payable(ownership.owner.account).transfer(uint256(refundAmount));
     }
 
-    function multiplyByEntitlementRatio(StrataLotId strataLotId, uint256 amount) private view returns (uint256) {
-        //Type conversions are supposedly expensive on gas.
-        //We might wish to keep everything as floating point numbers as much as possible
-        //Another possible approach: store fees per entitlement, then only multiply is needed and floating point is not needed.
-        return ABDKMathQuad.toUInt(
-            ABDKMathQuad.mul(
-                ABDKMathQuad.div(
-                    ABDKMathQuad.fromUInt(units[strataLotId].entitlement),
-                    ABDKMathQuad.fromUInt(totalEntitlement)),
-                ABDKMathQuad.fromUInt(amount)));
-    }
-
     //Verify that the sender of a message is the strata corporation
     function verifySenderIsStrataCorporation() private view {
         require(msg.sender == strataAccount);
@@ -390,7 +389,7 @@ contract Strata {
         RequestStatus status = voteResult(requestId);
         if (status == RequestStatus.Approved){
             requests[requestId].status = RequestStatus.Approved;
-            totalMonthlyStrataFee = requests[requestId].amount;
+            dailyStrataFeePerEntitlement = requests[requestId].amount;
         } else if (status == RequestStatus.Rejected){
             requests[requestId].status = RequestStatus.Rejected;
         }
