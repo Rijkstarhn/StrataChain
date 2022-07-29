@@ -261,7 +261,6 @@ contract Strata {
 
     function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] memory strataIds) public returns (RequestStatus) {
         require(owners[msg.sender].ownedUnitsCount > 0);
-        // RequestItem memory requestItem = requests[requestId];
         // Validate that every passed in lot ID is one that the sender owns. 
         // If it is not we can either reject the entire message or just ignore the ones you don't own
         for (uint i; i < strataIds.length; ++i) {
@@ -283,7 +282,13 @@ contract Strata {
         // Update request status
         RequestStatus status = voteResult(requestId);
         requests[requestId].status = status;
-        // requests[requestId] = requestItem;
+        if (status == RequestStatus.Approved){
+            if (requests[requestId].requestType == RequestType.Expense) {
+                withdraw(requestId);
+            } else {
+                confirmStrataFeeChange(requestId);
+            }
+        }
         emit RequestModified(requestId);
         return status;
     }
