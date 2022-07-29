@@ -252,10 +252,7 @@ contract Strata {
 
         RequestStatus status = voteResult(requestId);
         if (status == RequestStatus.Approved){
-            requests[requestId].status = RequestStatus.Approved;
             payable(strataAccount).transfer(requests[requestId].amount);
-        } else if (status == RequestStatus.Rejected){
-            requests[requestId].status = RequestStatus.Rejected;
         }
         return status;
     }
