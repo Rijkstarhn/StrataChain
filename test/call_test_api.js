@@ -1,4 +1,5 @@
-[
+const contractAddress = "0x86be6053E6e4Dd41F0Ed6a125CeF7ECDbEce8eEb";
+let abi = [
     {
       "inputs": [],
       "stateMutability": "nonpayable",
@@ -563,3 +564,13 @@
       "type": "function"
     }
   ]
+contract("testing contract", accounts=>{
+    it('set last strata fee collected date', async()=>{
+        let strata = new web3.eth.Contract(abi, contractAddress);
+        await strata.methods.setLastStrataFeeCollectedDate(7).send({from: accounts[0]});
+
+        let lastStrataFeeCollectedDateNum = (await strata.methods.lastStrataFeeCollectedDate().call());
+        console.log(`lastStrataFeeCollectedDateNum=${lastStrataFeeCollectedDateNum}`);
+
+    })
+});

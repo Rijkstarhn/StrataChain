@@ -59,7 +59,7 @@ const StrataLot = ({
 					<Typography className={styles.value}>{entitlement}</Typography>
 				</div>
 				<div className={styles.dataField}>
-					<Typography className={styles.label}>Monthly Strata Fee:</Typography>
+					<Typography className={styles.label}>Daily Strata Fee:</Typography>
 					<Typography className={styles.value}>{strataFee} ETH</Typography>
 				</div>
 				<div className={styles.dataField}>

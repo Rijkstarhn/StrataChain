@@ -98,7 +98,7 @@ contract Strata {
     
     uint256 public dailyStrataFeePerEntitlement;
     uint256 public lastStrataFeeCollectedDate;
-    uint16 totalEntitlement;
+    uint16 public totalEntitlement;
 
     uint requestIdCounter;
     
@@ -189,13 +189,13 @@ contract Strata {
             
             units[strataLotId].strataFeeBalance += int256(balanceToAdd);
         }
-
+        lastStrataFeeCollectedDate = date;
         emit StrataFeesCollected(date, dayCount );
     }
 
     // TODO: this is just for testing
-    function testSetLastStrataFeeCollectedDate(uint8 day) public {
-       lastStrataFeeCollectedDate =  (block.timestamp / 1 days) - day;
+    function setLastStrataFeeCollectedDate(uint8 daysBefore) public {
+       lastStrataFeeCollectedDate =  (block.timestamp / 1 days) - daysBefore;
     }
 
     // request withdrawal - returns the deadline date of vote

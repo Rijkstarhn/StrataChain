@@ -37,13 +37,14 @@ const mapRequestStatus = (requestStatusEnum) => {
 };
 const StrataFeeManager = ({ account }) => {
 	const [strataAccount, setStrataAccount] = useState(null);
-	const [totalMonthlyStrataFee, setTotalMonthlyStrataFee] = useState(0);
+	const [dailyStrataFeePerEntitlement, setDailyStrataFeePerEntitlement] = useState(0);
 	const [accountBalance, setAccountBalance] = useState(0);
 	const [autoApproveThreshold, setAutoApproveThreshold] = useState(0);
 	const [autoRejectThreshold, setAutoRejectThreshold] = useState(0);
 	const [units, setUnits] = useState({});
 	const [requests, setRequests] = useState({});
 	const [trigger, setTrigger] = useState(false);
+	// const [totalEntitlement, setTotalEntitlement] = useState(1); // avoid divided by 0 problem, init as 1
 
 	const triggerRefresh = ()=>{
 		setTrigger(!trigger);
@@ -59,12 +60,14 @@ const StrataFeeManager = ({ account }) => {
 
 				setStrataAccount(await contract.methods.strataAccount().call());
 
-				setTotalMonthlyStrataFee(
+				setDailyStrataFeePerEntitlement(
 					web3.utils.fromWei(
-						await contract.methods.totalMonthlyStrataFee().call(),
+						await contract.methods.dailyStrataFeePerEntitlement().call(),
 						"ether"
 					)
 				);
+
+				// setTotalEntitlement((await contract.methods.totalEntitlement().call()));
 
 				let owner = await contract.methods.owners(account).call();
 				setAutoApproveThreshold(
@@ -84,7 +87,7 @@ const StrataFeeManager = ({ account }) => {
 							.units(strataLotId)
 							.call();
 					}
-                    console.log("units", units);
+                    // console.log("units", units);
 
 					setUnits(units);
 				};
@@ -174,7 +177,7 @@ const StrataFeeManager = ({ account }) => {
 			{isUsingStrataAccount && (
 				<Container disableGutters>
 					<StrataCorporation
-						totalMonthlyStrataFee={totalMonthlyStrataFee}
+						dailyStrataFeePerEntitlement={dailyStrataFeePerEntitlement}
 						units={units}
 					/>
 				</Container>
@@ -251,7 +254,7 @@ const StrataFeeManager = ({ account }) => {
 									key={strataLotId}
 									lotId={strataLotId}
 									entitlement={unit.entitlement}
-									strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
+									strataFee={unit.entitlement * dailyStrataFeePerEntitlement}
 									strataFeeBalance={unit.strataFeeBalance}
 									isOwner
 								/>

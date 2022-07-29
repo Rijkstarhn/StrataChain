@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 
 import styles from "./StrataCorporation.module.css";
 
@@ -15,10 +15,11 @@ import StrataLot from "../StrataLot/StrataLot";
 import RequestExpenseForm from "../RequestExpenseForm/RequestExpenseForm";
 import RequestStrataFeeChangeForm from "../RequestStrataFeeChangeForm/RequestStrataFeeChangeForm";
 
-const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
+const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 	const [isRequestExpenseOpen, setRequestExpenseOpen] = useState(false);
 	const [isRequestStrataFeeChangeOpen, setRequestStrataFeeChangeOpen] =
 		useState(false);
+	const [lastStrataFeeCollectedDate, setLastStrataFeeCollectedDate] = useState("");
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleCollectStrataFees = async () => {
@@ -28,10 +29,18 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 		);
 	};
 
-	// const handleExpenseRequest = () => {
-	// 	console.log("expense request sent");
-	// };
-
+	useEffect (()=>{
+		(async ()=>{
+			try{
+				let daysFrom1970 = (await contract.methods.lastStrataFeeCollectedDate().call());
+				let d = new Date(daysFrom1970 * 86400000).toDateString();
+				setLastStrataFeeCollectedDate(d);
+			} catch (err){
+				console.log(err);
+			}
+		})();
+	}, );
+	
 	return (
 		<>
 			<Typography className={styles.header}>
@@ -44,10 +53,18 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 
 			<div className={styles.dataField}>
 				<Typography className={styles.label}>
-					Total Monthly Strata Fee:
+					Daily Strata Fee Per Entitlement:
 				</Typography>
 				<Typography className={styles.value}>
-					{totalMonthlyStrataFee} ETH
+					{dailyStrataFeePerEntitlement} ETH
+				</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>
+					Last Strata Fee Collected on:
+				</Typography>
+				<Typography className={styles.value}>
+					{lastStrataFeeCollectedDate}
 				</Typography>
 			</div>
 			<Button onClick={() => handleCollectStrataFees()}>
@@ -77,7 +94,7 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 								key={strataLotId}
 								lotId={strataLotId}
 								entitlement={unit.entitlement}
-								strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
+								strataFee={unit.entitlement * dailyStrataFeePerEntitlement}
 								strataFeeBalance={unit.strataFeeBalance}
 							/>
 						);

@@ -7,8 +7,8 @@ contract('contract strata fee collection', accounts => {
         strata = await Strata.deployed();
 
         let d = 23;
-        await strata.testSetLastStrataFeeCollectedDate(d);
-        let lastStrataFeeCollectedDateNum = (await strata.lastStrataFeeCollectedDate()).toNumber();
+        await strata.setLastStrataFeeCollectedDate(d);
+        // let lastStrataFeeCollectedDateNum = (await strata.lastStrataFeeCollectedDate()).toNumber();
         // console.log(`lastStrataFeeCollectedDateNum=${lastStrataFeeCollectedDateNum}`);
 
         let result = await strata.collectStrataFeePayments();
@@ -24,5 +24,8 @@ contract('contract strata fee collection', accounts => {
         assert.isTrue((await strata.units(2)).strataFeeBalance.eq(expectedFeePerEntitlement.muln(200)), "incorrect unit 2 balance");
         assert.isTrue((await strata.units(3)).strataFeeBalance.eq(expectedFeePerEntitlement.muln(300)), "incorrect unit 2 balance");
 
+        let updatedStrataFeeCollectedDate = await strata.lastStrataFeeCollectedDate();
+        console.log(updatedStrataFeeCollectedDate);
+        console.log(new Date(updatedStrataFeeCollectedDate * 86400000).toISOString());
     });
 })
