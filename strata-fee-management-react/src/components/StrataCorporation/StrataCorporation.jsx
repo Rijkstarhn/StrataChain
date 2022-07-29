@@ -1,24 +1,26 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 
 import styles from "./StrataCorporation.module.css";
 
-import { contract, sendTransaction } from "../../web3Utils";
+import { web3, contract, sendTransaction } from "../../web3Utils";
+import contractAddress from "../../contractaddress";
 
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import InputLabel from "@mui/material/InputLabel";
 
 import { TransactionInProgressContext } from "../App/App";
 import StrataLot from "../StrataLot/StrataLot";
 import RequestExpenseForm from "../RequestExpenseForm/RequestExpenseForm";
 import RequestStrataFeeChangeForm from "../RequestStrataFeeChangeForm/RequestStrataFeeChangeForm";
 
-const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
+const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 	const [isRequestExpenseOpen, setRequestExpenseOpen] = useState(false);
 	const [isRequestStrataFeeChangeOpen, setRequestStrataFeeChangeOpen] =
 		useState(false);
+	const [lastStrataFeeCollectedDate, setLastStrataFeeCollectedDate] = useState("");
+	const [strataBalance, setStrataBalance] = useState(0);
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleCollectStrataFees = async () => {
@@ -26,12 +28,28 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 			contract.methods.collectStrataFeePayments(),
 			setTransactionInProgress
 		);
+
 	};
 
-	// const handleExpenseRequest = () => {
-	// 	console.log("expense request sent");
-	// };
-
+	useEffect (()=>{
+		(async ()=>{
+			try{
+				let daysFrom1970 = (await contract.methods.lastStrataFeeCollectedDate().call());
+				let d = new Date(daysFrom1970 * 86400000).toDateString();
+				setLastStrataFeeCollectedDate(d);
+				
+				web3.eth
+				.getBalance(contractAddress)
+				.then(x=>{
+					let d = parseFloat(web3.utils.fromWei(x, 'ether'));
+					setStrataBalance(d);
+				});
+			} catch (err){
+				console.log(err);
+			}
+		})();
+	}, );
+	
 	return (
 		<>
 			<Typography className={styles.header}>
@@ -44,10 +62,26 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 
 			<div className={styles.dataField}>
 				<Typography className={styles.label}>
-					Total Monthly Strata Fee:
+					Daily Strata Fee Per Entitlement:
 				</Typography>
 				<Typography className={styles.value}>
-					{totalMonthlyStrataFee} ETH
+					{dailyStrataFeePerEntitlement} ETH
+				</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>
+					Strata Fund balance
+				</Typography>
+				<Typography className={styles.value}>
+					{strataBalance.toFixed(2)} ETH
+				</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>
+					Last Strata Fee Collected on:
+				</Typography>
+				<Typography className={styles.value}>
+					{lastStrataFeeCollectedDate}
 				</Typography>
 			</div>
 			<Button onClick={() => handleCollectStrataFees()}>
@@ -77,7 +111,7 @@ const StrataCorporation = ({ totalMonthlyStrataFee, units }) => {
 								key={strataLotId}
 								lotId={strataLotId}
 								entitlement={unit.entitlement}
-								strataFee={(unit.entitlement / 600) * totalMonthlyStrataFee}
+								strataFee={unit.entitlement * dailyStrataFeePerEntitlement}
 								strataFeeBalance={unit.strataFeeBalance}
 							/>
 						);

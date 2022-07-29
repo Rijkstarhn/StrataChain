@@ -1,5 +1,6 @@
 let Strata = artifacts.require("./strata.sol");
 
+
 contract("Strata 2", accounts =>{
     it('strata fee change  ', async ()=>{
         let proposedFee = web3.utils.toWei('50', 'ether');
@@ -20,7 +21,7 @@ contract("Strata 2", accounts =>{
         assert.equal(unit1.currentOwnership.owner.account , accounts[1], 'unit 1 should be transferred to account 1');
 
         // vote
-        await strata.voteOnRequest(requestId, true, 1, {from: accounts[1]});
+        // await strata.voteOnRequest(requestId, true, 1, {from: accounts[1]});
         // await strata.voteOnRequest(requestId, true, 2, {from: accounts[2]});
 
         // await new Promise((r, v)=>{
