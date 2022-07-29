@@ -259,9 +259,9 @@ contract Strata {
 
     // vote
 
-    function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] memory strataIds) public {
+    function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] memory strataIds) public returns (RequestStatus) {
         require(owners[msg.sender].ownedUnitsCount > 0);
-        RequestItem memory requestItem = requests[requestId];
+        // RequestItem memory requestItem = requests[requestId];
         // Validate that every passed in lot ID is one that the sender owns. 
         // If it is not we can either reject the entire message or just ignore the ones you don't own
         for (uint i; i < strataIds.length; ++i) {
@@ -270,18 +270,22 @@ contract Strata {
             if (requestVoters[requestId][strataIds[i]] == false) {
                 // Increment the vote yes or vote no counter by however many units we passed in that have not yet voted
                 if (supportsRequest) {
-                    ++requestItem.approvalVoteCount;
+                    ++requests[requestId].approvalVoteCount;
                 }
                 else {
-                    ++requestItem.rejectionVoteCount;
+                    ++requests[requestId].rejectionVoteCount;
                 }
                 // Mark the units as voted
                 requestVoters[requestId][strataIds[i]] = true;
             }
             
         }
-        requests[requestId] = requestItem;
+        // Update request status
+        RequestStatus status = voteResult(requestId);
+        requests[requestId].status = status;
+        // requests[requestId] = requestItem;
         emit RequestModified(requestId);
+        return status;
     }
 
     function setAutoApproveThreshold(uint256 amount) public {
