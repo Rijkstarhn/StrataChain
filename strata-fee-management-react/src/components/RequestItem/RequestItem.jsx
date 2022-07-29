@@ -61,19 +61,27 @@ const RequestItem = ({
 		triggerRefresh();
 	}
 
+	const handleWithdrawRequest= async ()=>{
+		await sendTransaction(
+			contract.methods.withdraw(requestId),
+			setTransactionInProgress
+		);
+		// triggerRefresh();
+	}
+
 	let withdrawFundsButton = null;
 	let updateStrataFeeButton = null;
 	let voteByDate = new Date(parseInt(voteDeadline) * 1000).toDateString();
 
 	if (isStrataCorporation) {
 		if (requestStatus === "Approved") {
-			if (requestType === "Expense") {
-				withdrawFundsButton = (
-					<div className={styles.dataField}>
-						<Button onClick={() => { }}>Withdraw Funds</Button>
-					</div>
-				);
-			}
+			// if (requestType === "Expense") {
+			// 	withdrawFundsButton = (
+			// 		<div className={styles.dataField}>
+			// 			<Button onClick={() => { }}>Withdraw Funds</Button>
+			// 		</div>
+			// 	);
+			// }
 		} else if (requestStatus === "Pending") {
 			//TODO: We could potentially support having the strata decline a request
 			//if they no longer need it
@@ -84,6 +92,13 @@ const RequestItem = ({
 					</div>
 				);
 
+			} else {
+				// expense request
+				withdrawFundsButton = (
+					<div className={styles.dataField}>
+						<Button onClick={() => handleWithdrawRequest()}>Withdraw Funds</Button>
+					</div>
+				);				
 			}
 		}
 	}

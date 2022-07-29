@@ -11,6 +11,7 @@ import Stack from "@mui/material/Stack";
 import StrataCorporation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
 import RequestItem from "../RequestItem/RequestItem";
+import contractAddress from "../../contractaddress";
 
 export const TriggerRefreshContext = createContext();
 
@@ -159,6 +160,8 @@ const StrataFeeManager = ({ account }) => {
 						console.log(event);
 					}
 				);
+
+				web3.eth.getBalance(contractAddress).then(x=>console.log(x));
 			} catch (err) {
 				console.log(err);
 			}

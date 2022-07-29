@@ -2,13 +2,13 @@ import { useState, useContext, useEffect } from "react";
 
 import styles from "./StrataCorporation.module.css";
 
-import { contract, sendTransaction } from "../../web3Utils";
+import { web3, contract, sendTransaction } from "../../web3Utils";
+import contractAddress from "../../contractaddress";
 
 import Container from "@mui/material/Container";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import InputLabel from "@mui/material/InputLabel";
 
 import { TransactionInProgressContext } from "../App/App";
 import StrataLot from "../StrataLot/StrataLot";
@@ -20,6 +20,7 @@ const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 	const [isRequestStrataFeeChangeOpen, setRequestStrataFeeChangeOpen] =
 		useState(false);
 	const [lastStrataFeeCollectedDate, setLastStrataFeeCollectedDate] = useState("");
+	const [strataBalance, setStrataBalance] = useState(0);
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleCollectStrataFees = async () => {
@@ -27,6 +28,7 @@ const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 			contract.methods.collectStrataFeePayments(),
 			setTransactionInProgress
 		);
+
 	};
 
 	useEffect (()=>{
@@ -35,6 +37,13 @@ const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 				let daysFrom1970 = (await contract.methods.lastStrataFeeCollectedDate().call());
 				let d = new Date(daysFrom1970 * 86400000).toDateString();
 				setLastStrataFeeCollectedDate(d);
+				
+				web3.eth
+				.getBalance(contractAddress)
+				.then(x=>{
+					let d = parseFloat(web3.utils.fromWei(x, 'ether'));
+					setStrataBalance(d);
+				});
 			} catch (err){
 				console.log(err);
 			}
@@ -57,6 +66,14 @@ const StrataCorporation = ({ dailyStrataFeePerEntitlement, units }) => {
 				</Typography>
 				<Typography className={styles.value}>
 					{dailyStrataFeePerEntitlement} ETH
+				</Typography>
+			</div>
+			<div className={styles.dataField}>
+				<Typography className={styles.label}>
+					Strata Fund balance
+				</Typography>
+				<Typography className={styles.value}>
+					{strataBalance.toFixed(2)} ETH
 				</Typography>
 			</div>
 			<div className={styles.dataField}>
