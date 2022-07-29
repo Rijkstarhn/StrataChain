@@ -88,7 +88,7 @@ contract Strata {
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
     mapping(RequestId => RequestItem) public requests;
-    mapping(RequestId => mapping(address => bool)) private requestVoters;
+    mapping(RequestId => mapping(StrataLotId => bool)) private requestVoters;
 
     //This is necessary because apparently you cannot directly iterate through entries in a mapping.
     StrataLotId[] public strataLotIds;
@@ -230,11 +230,11 @@ contract Strata {
 
             if (requestItem.amount < owner.autoApproveThreshold) {
                 ++requestItem.approvalVoteCount;
-                requestVoters[requestId][msg.sender] = true;
+                requestVoters[requestId][strataLotId] = true;
             }
             else if (requestItem.amount > owner.autoRejectThreshold) {
                 ++requestItem.rejectionVoteCount;
-                requestVoters[requestId][msg.sender] = true;
+                requestVoters[requestId][strataLotId] = true;
             }
 
         }
@@ -262,18 +262,27 @@ contract Strata {
 
     // vote
 
-    function voteOnRequest(RequestId requestId, bool supportsRequest) public {
-        require(requestVoters[requestId][msg.sender] == false);
+    function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] memory strataIds) public {
         require(owners[msg.sender].ownedUnitsCount > 0);
         RequestItem memory requestItem = requests[requestId];
-        
-        if (supportsRequest) {
-            requestItem.approvalVoteCount += owners[msg.sender].ownedUnitsCount;
+        // Validate that every passed in lot ID is one that the sender owns. 
+        // If it is not we can either reject the entire message or just ignore the ones you don't own
+        for (uint i; i < strataIds.length; ++i) {
+            require(units[strataIds[i]].currentOwnership.owner.account == msg.sender);
+            // Determine which of the passed in lot IDs has voted on the request
+            if (requestVoters[requestId][strataIds[i]] == false) {
+                // Increment the vote yes or vote no counter by however many units we passed in that have not yet voted
+                if (supportsRequest) {
+                    ++requestItem.approvalVoteCount;
+                }
+                else {
+                    ++requestItem.rejectionVoteCount;
+                }
+                // Mark the units as voted
+                requestVoters[requestId][strataIds[i]] = true;
+            }
+            
         }
-        else {
-            requestItem.rejectionVoteCount += owners[msg.sender].ownedUnitsCount;
-        }
-        requestVoters[requestId][msg.sender] = true;
         requests[requestId] = requestItem;
         emit RequestModified(requestId);
     }

@@ -439,6 +439,11 @@
           "internalType": "bool",
           "name": "supportsRequest",
           "type": "bool"
+        },
+        {
+        "internalType": "Strata.StrataLotId[]",
+        "name": "strataIds",
+        "type": "uint16[]"
         }
       ],
       "name": "voteOnRequest",
