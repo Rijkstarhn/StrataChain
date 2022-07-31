@@ -19,7 +19,9 @@ export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handlePayStrataFee = async (data) => {
+		console.log(data);
 		const weiToSend = web3.utils.toWei(data.amount, "ether");
+		console.log(weiToSend);
 		await sendTransaction(
 			contract.methods.payStrataFee(lotId),
 			setTransactionInProgress,
@@ -35,13 +37,14 @@ export const PayStrataFeeForm = ({ lotId, isOpen, onClose }) => {
 				title={`Payment Information for Lot ID ${lotId}`}
 				onSubmit={handlePayStrataFee}
 			>
-				<span>Amount</span>
+				<span>Amount (ETH)</span>
 				<Controller
 					control={control}
 					name="amount"
 					render={({ field: { onChange } }) => (
 						<OutlinedInput
 							type="number"
+							inputProps={{ step: "any" }}
 							defaultValue={0}
 							onChange={(e) => onChange(e.target.value)}
 						/>

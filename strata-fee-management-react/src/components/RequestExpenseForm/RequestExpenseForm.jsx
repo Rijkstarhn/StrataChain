@@ -20,8 +20,9 @@ export const RequestExpenseForm = ({ isOpen, onClose }) => {
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleExpenseRequest = async (data) => {
+		const weiToSend = web3.utils.toWei(data.amount, "ether");
 		await sendTransaction(
-			contract.methods.requestWithdrawal(data.amount, data.reason),
+			contract.methods.requestWithdrawal(weiToSend, data.reason),
 			setTransactionInProgress
 		);
 	};
@@ -34,13 +35,14 @@ export const RequestExpenseForm = ({ isOpen, onClose }) => {
 				title="Expense Request Details"
 				onSubmit={handleExpenseRequest}
 			>
-				<span>Amount</span>
+				<span>Amount (ETH)</span>
 				<Controller
 					control={control}
 					name="amount"
 					render={({ field: { onChange } }) => (
 						<OutlinedInput
 							type="number"
+							inputProps={{ step: "any" }}
 							defaultValue={0}
 							onChange={(e) => onChange(e.target.value)}
 						/>
