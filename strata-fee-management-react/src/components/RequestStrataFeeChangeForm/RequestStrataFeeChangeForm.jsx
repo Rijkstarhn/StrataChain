@@ -3,7 +3,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 
 import styles from "./RequestStrataFeeChangeForm.module.css";
 
-import { contract, sendTransaction } from "../../web3Utils";
+import { web3, contract, sendTransaction } from "../../web3Utils";
 
 import TextField from "@mui/material/TextField";
 import OutlinedInput from "@mui/material/OutlinedInput";
