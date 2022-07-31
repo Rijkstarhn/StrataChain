@@ -34,6 +34,8 @@ const mapRequestStatus = (requestStatusEnum) => {
 			return "Rejected";
 		case "2":
 			return "Pending";
+		case "3":
+			return "Completed";
 	}
 };
 const StrataFeeManager = ({ account }) => {

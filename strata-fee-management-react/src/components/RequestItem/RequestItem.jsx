@@ -76,35 +76,15 @@ const RequestItem = ({
 
 	if (isStrataCorporation) {
 		if (requestStatus === "Approved") {
-			// if (requestType === "Expense") {
-			// 	withdrawFundsButton = (
-			// 		<div className={styles.dataField}>
-			// 			<Button onClick={() => { }}>Withdraw Funds</Button>
-			// 		</div>
-			// 	);
-			// }
-		} else if (requestStatus === "Pending") {
-			//TODO: We could potentially support having the strata decline a request
-			//if they no longer need it
-			if (isOwner) {
-				voteButton = (
-					<div className={styles.dataField}>
-						<Button onClick={() => setVoteOnRequestOpen(true)}>
-							Vote on Request
-						</Button>
-					</div>
-				);
-			}
-
 			if (requestType === "Strata Fee Change") {
 				updateStrataFeeButton = (
 					<div className={styles.dataField}>
 						<Button onClick={() => handleRefreshStrataFeeChangeRequest()}>
-							Refresh Status
+							Confirm Strata Fee Change
 						</Button>
 					</div>
 				);
-			} else {
+			} else if (requestType === "Expense") {
 				// expense request
 				withdrawFundsButton = (
 					<div className={styles.dataField}>
@@ -114,6 +94,19 @@ const RequestItem = ({
 					</div>
 				);
 			}
+		}
+	}
+	if (isOwner) {
+		if (requestStatus === "Pending") {
+			//TODO: We could potentially support having the strata decline a request
+			//if they no longer need it
+			voteButton = (
+				<div className={styles.dataField}>
+					<Button onClick={() => setVoteOnRequestOpen(true)}>
+						Vote on Request
+					</Button>
+				</div>
+			);
 		}
 	}
 

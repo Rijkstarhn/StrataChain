@@ -37,7 +37,8 @@ contract Strata {
     enum RequestStatus {
         Approved,
         Rejected,
-        Pending
+        Pending,
+        Completed
     }
 
     enum RequestType {
@@ -274,17 +275,16 @@ contract Strata {
 
     // withdraw money from expense
     function withdraw(RequestId requestId) public returns (RequestStatus) {
-        verifySenderIsStrataCorporation();
-
         RequestStatus status = voteResult(requestId);
         if (status == RequestStatus.Approved){
             payable(strataAccount).transfer(requests[requestId].amount);
+            status = RequestStatus.Completed;
+            requests[requestId].status = status;
         }
         return status;
     }
 
     // vote
-
     function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] memory strataIds) public returns (RequestStatus) {
         require(owners[msg.sender].ownedUnitsCount > 0);
         // Validate that every passed in lot ID is one that the sender owns. 
@@ -424,15 +424,11 @@ contract Strata {
 
     // confirm strata fee change - effective immediately
     function confirmStrataFeeChange(RequestId requestId) public returns (RequestStatus) {
-        // verify sender is strata corp
-        verifySenderIsStrataCorporation();
-
         RequestStatus status = voteResult(requestId);
-        if (status == RequestStatus.Approved){
-            requests[requestId].status = RequestStatus.Approved;
+        if (status == RequestStatus.Approved) {
             dailyStrataFeePerEntitlement = requests[requestId].amount;
-        } else if (status == RequestStatus.Rejected){
-            requests[requestId].status = RequestStatus.Rejected;
+            status = RequestStatus.Completed;
+            requests[requestId].status = status;
         }
         return status;
     }
