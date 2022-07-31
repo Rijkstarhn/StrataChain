@@ -38,7 +38,8 @@ const mapRequestStatus = (requestStatusEnum) => {
 };
 const StrataFeeManager = ({ account }) => {
 	const [strataAccount, setStrataAccount] = useState(null);
-	const [dailyStrataFeePerEntitlement, setDailyStrataFeePerEntitlement] = useState(0);
+	const [dailyStrataFeePerEntitlement, setDailyStrataFeePerEntitlement] =
+		useState(0);
 	const [accountBalance, setAccountBalance] = useState(0);
 	const [autoApproveThreshold, setAutoApproveThreshold] = useState(0);
 	const [autoRejectThreshold, setAutoRejectThreshold] = useState(0);
@@ -47,9 +48,9 @@ const StrataFeeManager = ({ account }) => {
 	const [trigger, setTrigger] = useState(false);
 	// const [totalEntitlement, setTotalEntitlement] = useState(1); // avoid divided by 0 problem, init as 1
 
-	const triggerRefresh = ()=>{
+	const triggerRefresh = () => {
 		setTrigger(!trigger);
-	}
+	};
 
 	useEffect(() => {
 		(async () => {
@@ -83,12 +84,11 @@ const StrataFeeManager = ({ account }) => {
 
 					let units = {};
 					for (let i = 0; i < unitCount; ++i) {
-						let strataLotId = await contract.methods.strataLotIds(i).call();
+						const strataLotId = i;
 						units[strataLotId] = await contract.methods
 							.units(strataLotId)
 							.call();
 					}
-                    // console.log("units", units);
 
 					setUnits(units);
 				};
@@ -100,7 +100,7 @@ const StrataFeeManager = ({ account }) => {
 
 					let requests = {};
 					for (let i = 0; i < requestCount; ++i) {
-						let requestId = await contract.methods.requestIds(i).call();
+						const requestId = i;
 						requests[requestId] = await contract.methods
 							.requests(requestId)
 							.call();
@@ -161,7 +161,7 @@ const StrataFeeManager = ({ account }) => {
 					}
 				);
 
-				web3.eth.getBalance(contractAddress).then(x=>console.log(x));
+				web3.eth.getBalance(contractAddress).then((x) => console.log(x));
 			} catch (err) {
 				console.log(err);
 			}
@@ -170,10 +170,9 @@ const StrataFeeManager = ({ account }) => {
 
 	const isUsingStrataAccount = account === strataAccount;
 
-	const ownedUnits = Object.keys(units)
-	.filter(
+	const ownedUnits = Object.keys(units).filter(
 		(strataLotId) =>
-			units[strataLotId].currentOwnership.owner.account === account
+			units[strataLotId].currentOwnership.ownerAccount === account
 	);
 	return (
 		<TriggerRefreshContext.Provider value={triggerRefresh}>
@@ -237,10 +236,10 @@ const StrataFeeManager = ({ account }) => {
 								reason={requestItem.description}
 								voteDeadline={requestItem.voteDeadline}
 								isStrataCorporation={isUsingStrataAccount}
-                                yesCounts = {requestItem.approvalVoteCount}
-                                noCounts = {requestItem.rejectionVoteCount}
-								isOwner={ownedUnits.length>0}
-                                ownedUnits={ownedUnits}
+								yesCounts={requestItem.approvalVoteCount}
+								noCounts={requestItem.rejectionVoteCount}
+								isOwner={ownedUnits.length > 0}
+								ownedUnits={ownedUnits}
 							/>
 						);
 					})}
@@ -249,20 +248,19 @@ const StrataFeeManager = ({ account }) => {
 			<Container disableGutters>
 				<Typography className={styles.subHeader}>Owned Units</Typography>
 				<Stack direction="row" spacing={4} className={styles.unitContainer}>
-					{ownedUnits
-						.map((strataLotId) => {
-							const unit = units[strataLotId];
-							return (
-								<StrataLot
-									key={strataLotId}
-									lotId={strataLotId}
-									entitlement={unit.entitlement}
-									strataFee={unit.entitlement * dailyStrataFeePerEntitlement}
-									strataFeeBalance={unit.strataFeeBalance}
-									isOwner
-								/>
-							);
-						})}
+					{ownedUnits.map((strataLotId) => {
+						const unit = units[strataLotId];
+						return (
+							<StrataLot
+								key={strataLotId}
+								lotId={strataLotId}
+								entitlement={unit.entitlement}
+								strataFee={unit.entitlement * dailyStrataFeePerEntitlement}
+								strataFeeBalance={unit.strataFeeBalance}
+								isOwner
+							/>
+						);
+					})}
 				</Stack>
 			</Container>
 		</TriggerRefreshContext.Provider>

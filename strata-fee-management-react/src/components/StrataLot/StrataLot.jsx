@@ -47,7 +47,7 @@ const StrataLot = ({
 	};
 
 	return (
-		<Card variant="outlined">
+		<Card variant="outlined" className={styles.container}>
 			<CardHeader
 				title={`Unit ${lotId}`}
 				titleTypographyProps={{ className: styles.cardHeaderTitle }}

@@ -9,15 +9,11 @@ contract Strata {
     //Being clever about how data is packed and not unnecessarily using mappings is one strategy.
     //Possibly storing data off-chain may be another. For now though, let's prioritize getting the contract working.
 
-    //Timestamps are stored in unix time which is measured in seconds.
-    //Simply add this to a date to offset the date by a week.
-    // uint32 constant weekInSeconds = 7 * 24 * 60 * 60;
-
     /// TYPES
 
     type StrataLotId is uint16;
-    type RequestId is uint;
-    type Date is uint;
+    type RequestId is uint32;
+    type Date is uint48;
 
     struct Unit {
         uint16 entitlement;
@@ -26,18 +22,16 @@ contract Strata {
     }
 
     struct Ownership {
-        Owner owner;
+        address ownerAccount;
         Date sinceDate;        
-        // StrataLotId strataLotId;
         uint256 paidStrataFees;
         uint256 paidExpenses;
     }
 
     struct Owner {
+        uint8 ownedUnitsCount;
         uint256 autoApproveThreshold;
         uint256 autoRejectThreshold;
-        address account;
-        uint16 ownedUnitsCount;
     }
 
     enum RequestStatus {
@@ -54,11 +48,11 @@ contract Strata {
     struct RequestItem {
         RequestType requestType;
         string description;
-        uint256 amount;
         RequestStatus status;
         uint16 approvalVoteCount;
         uint16 rejectionVoteCount;
         Date voteDeadline;
+        uint256 amount;
     }
 
     /// EVENTS
@@ -90,82 +84,115 @@ contract Strata {
     mapping(RequestId => RequestItem) public requests;
     mapping(RequestId => mapping(StrataLotId => bool)) private requestVoters;
 
-    //This is necessary because apparently you cannot directly iterate through entries in a mapping.
-    StrataLotId[] public strataLotIds;
-    RequestId[] public requestIds;
-
     address public strataAccount;
     
     uint256 public dailyStrataFeePerEntitlement;
     uint256 public lastStrataFeeCollectedDate;
     uint16 public totalEntitlement;
 
-    uint requestIdCounter;
+    uint32 public requestCount;
+    uint16 public strataLotCount;
+
+    function createUnit(uint16 entitlement, address ownerAccount) private
+    {
+        units[StrataLotId.wrap(strataLotCount++)] = Unit({
+            entitlement: entitlement,
+            strataFeeBalance: 0,
+            currentOwnership: Ownership({
+                ownerAccount: ownerAccount,
+                sinceDate: Date.wrap(uint48(block.timestamp)),
+                paidStrataFees: 0,
+                paidExpenses: 0
+            })
+        });
+    }
     
     constructor() {
         strataAccount = msg.sender;
-        dailyStrataFeePerEntitlement = 10000 gwei;
+        dailyStrataFeePerEntitlement = 2371163 gwei;
         lastStrataFeeCollectedDate = block.timestamp / 1 days;
-        totalEntitlement = 600;
+        totalEntitlement = 7077;
 
-        requestIdCounter = 0;
+        requestCount = 0;
+        strataLotCount = 0;
 
         // initially assume all units are owned by strata corp, call transferOwner to change ownership
 
-        Owner memory defaultOwner = Owner({
-            account: strataAccount,
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(115, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+
+        createUnit(119, strataAccount);
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(93, strataAccount);
+        createUnit(119, strataAccount);
+
+        createUnit(122, strataAccount);
+        createUnit(108, strataAccount);
+        createUnit(210, strataAccount);
+        createUnit(232, strataAccount);
+        createUnit(210, strataAccount);
+
+        createUnit(232, strataAccount);
+        createUnit(216, strataAccount);
+        createUnit(238, strataAccount);
+
+        owners[strataAccount] = Owner({
             autoApproveThreshold: 0,
             autoRejectThreshold: 2**256 - 1,
-            ownedUnitsCount: 3
+            ownedUnitsCount: 58
         });
-
-        units[StrataLotId.wrap(1)] = Unit({
-            entitlement: 100,
-            currentOwnership: Ownership({
-                owner: defaultOwner,
-                sinceDate: Date.wrap(block.timestamp),
-                paidStrataFees: 0,
-                paidExpenses: 0
-            }),
-            strataFeeBalance: 0
-        });
-
-        units[StrataLotId.wrap(2)] = Unit({
-            entitlement: 200,
-            currentOwnership: Ownership({
-                owner: defaultOwner,
-                sinceDate: Date.wrap(block.timestamp),
-                paidStrataFees: 0,
-                paidExpenses: 0
-            }),
-            strataFeeBalance: 0
-        });
-
-        units[StrataLotId.wrap(3)] = Unit({
-            entitlement: 300,
-            currentOwnership: Ownership({
-                owner: defaultOwner,
-                sinceDate: Date.wrap(block.timestamp),
-                paidStrataFees: 0,
-                paidExpenses: 0
-            }),
-            strataFeeBalance: 0
-        });
-
-        strataLotIds.push(StrataLotId.wrap(1));
-        strataLotIds.push(StrataLotId.wrap(2));
-        strataLotIds.push(StrataLotId.wrap(3));
-
-
-        owners[strataAccount] = defaultOwner;
-    }
-
-    function strataLotCount() public view returns (uint) {
-        return strataLotIds.length;
-    }
-
-    function requestCount() public view returns (uint) {
-        return requestIds.length;
     }
 
     // collect strata fee from owner
@@ -182,8 +209,8 @@ contract Strata {
         uint256 date = (block.timestamp / 1 days);
         uint dayCount = (date - lastStrataFeeCollectedDate);
         uint256 strataFeePerEntitlement =dayCount  * dailyStrataFeePerEntitlement;
-        for (uint i; i < strataLotIds.length; ++i) {
-            StrataLotId strataLotId = strataLotIds[i];
+        for (uint16 i = 1; i <= strataLotCount; ++i) {
+            StrataLotId strataLotId = StrataLotId.wrap(i);
             
             uint256 balanceToAdd = units[strataLotId].entitlement * strataFeePerEntitlement;
             
@@ -210,17 +237,16 @@ contract Strata {
             status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
-            voteDeadline: Date.wrap(block.timestamp + 7 days)
+            voteDeadline: Date.wrap(uint48(block.timestamp) + 7 days)
         });
 
-        RequestId requestId = RequestId.wrap(requestIdCounter++);
+        RequestId requestId = RequestId.wrap(requestCount++);
         requests[requestId] = requestItem;
-        requestIds.push(requestId);
 
-        for (uint i = 0; i < strataLotIds.length; ++i) {
-            StrataLotId strataLotId = strataLotIds[i];
+        for (uint16 i = 1; i <= strataLotCount; ++i) {
+            StrataLotId strataLotId = StrataLotId.wrap(i);
 
-            Owner memory owner = units[strataLotId].currentOwnership.owner;
+            Owner memory owner = owners[units[strataLotId].currentOwnership.ownerAccount];
 
             //TODO: Re-evaluate where it makes most sense to tally up auto votes.
             //Doing it at the creation of an expense is nice and simple though,
@@ -264,7 +290,7 @@ contract Strata {
         // Validate that every passed in lot ID is one that the sender owns. 
         // If it is not we can either reject the entire message or just ignore the ones you don't own
         for (uint i; i < strataIds.length; ++i) {
-            require(units[strataIds[i]].currentOwnership.owner.account == msg.sender);
+            require(units[strataIds[i]].currentOwnership.ownerAccount == msg.sender);
             // Determine which of the passed in lot IDs has voted on the request
             if (requestVoters[requestId][strataIds[i]] == false) {
                 // Increment the vote yes or vote no counter by however many units we passed in that have not yet voted
@@ -312,9 +338,8 @@ contract Strata {
         refundUnusedStrataFee(strataLotId);
 
         Owner memory newOwner = owners[newOwnerAccount];
-        if (newOwner.account == address(0)) {
+        if (newOwner.ownedUnitsCount == 0) {
             newOwner = Owner({
-                account: newOwnerAccount,
                 autoApproveThreshold: 0,
                 autoRejectThreshold: 2**256 - 1,
                 ownedUnitsCount: 0
@@ -323,8 +348,8 @@ contract Strata {
 
         Unit memory unit = units[strataLotId];
         unit.currentOwnership = Ownership({
-                owner: newOwner,
-                sinceDate: Date.wrap(block.timestamp),
+                ownerAccount: newOwnerAccount,
+                sinceDate: Date.wrap(uint48(block.timestamp)),
                 paidStrataFees: 0,
                 paidExpenses: 0
             });
@@ -351,7 +376,7 @@ contract Strata {
         if (refundAmount < 0) {
             refundAmount = 0;
         }
-        payable(ownership.owner.account).transfer(uint256(refundAmount));
+        payable(ownership.ownerAccount).transfer(uint256(refundAmount));
     }
 
     //Verify that the sender of a message is the strata corporation
@@ -361,12 +386,12 @@ contract Strata {
 
     //Verify that the sender of a message is an owner tracked by this contract
     function verifySenderIsOwner() private view {
-        require(owners[msg.sender].account == msg.sender);
+        require(owners[msg.sender].ownedUnitsCount > 0);
     }
 
     //Verify that the sender of a message is the owner of a particular strata lot
     function verifySenderIsOwnerOfStrataLot(StrataLotId strataLotId) private view {
-        require(units[strataLotId].currentOwnership.owner.account == msg.sender);
+        require(units[strataLotId].currentOwnership.ownerAccount == msg.sender);
     }
 
     //request strata fee change
@@ -374,12 +399,12 @@ contract Strata {
         return requestStrataFeeChange(newTotalMonthlyStrataFee, reason, 7 days);
     }
 
-    function requestStrataFeeChange(uint newTotalMonthlyStrataFee, string memory reason, uint votingPeriod) public returns (Date) {
+    function requestStrataFeeChange(uint newTotalMonthlyStrataFee, string memory reason, uint48 votingPeriod) public returns (Date) {
         // verify sender is strata corp
         verifySenderIsStrataCorporation();
 
         // create a reqeust
-        RequestId requestId = RequestId.wrap(requestIdCounter++);
+        RequestId requestId = RequestId.wrap(requestCount++);
         requests[requestId] = RequestItem({
             requestType: RequestType.FeeChange,
             description: reason, 
@@ -387,16 +412,14 @@ contract Strata {
             status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
-            voteDeadline: Date.wrap(block.timestamp + votingPeriod)
-            
+            voteDeadline: Date.wrap(uint48(block.timestamp) + votingPeriod)
         });
-        requestIds.push(requestId);
 
         // emit an event
         emit RequestModified(requestId);
 
         // return the deadline [TODO: may truncate the time portion?]
-        return Date.wrap(block.timestamp + votingPeriod);
+        return Date.wrap(uint48(block.timestamp) + votingPeriod);
     }
 
     // confirm strata fee change - effective immediately
@@ -416,7 +439,7 @@ contract Strata {
 
     function voteResult(RequestId requestId) private view returns (RequestStatus){
         RequestItem memory requestItem = requests[requestId];
-        uint majority = uint(strataLotIds.length >> 1) + 1;
+        uint majority = uint(strataLotCount >> 1) + 1;
 
         //If more than half of all units approved, so end vote early
         if (requestItem.approvalVoteCount >= majority) {
@@ -425,7 +448,7 @@ contract Strata {
         }
 
         //If more than half of all units rejected, so end vote early
-        if (requestItem.rejectionVoteCount > strataLotIds.length - majority) {
+        if (requestItem.rejectionVoteCount > strataLotCount - majority) {
             // delete requests[requestId];
             return RequestStatus.Rejected;
         }
