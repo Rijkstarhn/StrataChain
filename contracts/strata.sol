@@ -276,7 +276,7 @@ contract Strata {
     // withdraw money from expense
     function withdraw(RequestId requestId) public returns (RequestStatus) {
         RequestStatus status = voteResult(requestId);
-        if (status == RequestStatus.Approved){
+        if (status == RequestStatus.Approved) {
             payable(strataAccount).transfer(requests[requestId].amount);
             status = RequestStatus.Completed;
             requests[requestId].status = status;
@@ -309,9 +309,10 @@ contract Strata {
         RequestStatus status = voteResult(requestId);
         requests[requestId].status = status;
         if (status == RequestStatus.Approved){
-            if (requests[requestId].requestType == RequestType.Expense) {
+            if (requests[requestId].requestType == RequestType.Expense && address(this).balance >= requests[requestId].amount) {
                 withdraw(requestId);
-            } else {
+            }
+            else if (requests[requestId].requestType == RequestType.FeeChange) {
                 confirmStrataFeeChange(requestId);
             }
         }
