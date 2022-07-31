@@ -20,8 +20,9 @@ export const RequestStrataFeeChangeForm = ({ isOpen, onClose }) => {
 	const { setTransactionInProgress } = useContext(TransactionInProgressContext);
 
 	const handleStrataFeeChangeRequest = async (data) => {
+		const weiToSend = web3.utils.toWei(data.amount, "ether");
 		await sendTransaction(
-			contract.methods.requestStrataFeeChange(data.amount, data.reason),
+			contract.methods.requestStrataFeeChange(weiToSend, data.reason),
 			setTransactionInProgress
 		);
 	};
@@ -34,13 +35,14 @@ export const RequestStrataFeeChangeForm = ({ isOpen, onClose }) => {
 				title="Strata Fee Change Request Details"
 				onSubmit={handleStrataFeeChangeRequest}
 			>
-				<span>Amount</span>
+				<span>Amount (ETH)</span>
 				<Controller
 					control={control}
 					name="amount"
 					render={({ field: { onChange } }) => (
 						<OutlinedInput
 							type="number"
+							inputProps={{ step: "any" }}
 							defaultValue={0}
 							onChange={(e) => onChange(e.target.value)}
 						/>
