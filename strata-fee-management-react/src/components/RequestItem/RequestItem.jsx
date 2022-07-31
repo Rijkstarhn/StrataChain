@@ -19,7 +19,6 @@ import PayStrataFeeForm from "../PayStrataFeeForm/PayStrataFeeForm";
 import TransferOwnerForm from "../TransferOwnerForm/TransferOwnerForm";
 import { TriggerRefreshContext } from "../StrataFeeManager/StrataFeeManager";
 
-
 const RequestItem = ({
 	requestId,
 	requestType,
@@ -27,11 +26,11 @@ const RequestItem = ({
 	amount,
 	reason,
 	isStrataCorporation,
-    yesCounts,
-    noCounts,
+	yesCounts,
+	noCounts,
 	voteDeadline,
 	isOwner,
-    ownedUnits
+	ownedUnits
 }) => {
 	const [isVoteOnRequestOpen, setVoteOnRequestOpen] = useState(false);
 
@@ -56,25 +55,25 @@ const RequestItem = ({
 	const handleRefreshStrataFeeChangeRequest = async () => {
 		await sendTransaction(
 			contract.methods.confirmStrataFeeChange(requestId),
-			setTransactionInProgress,
-
+			setTransactionInProgress
 		);
 		triggerRefresh();
-	}
+	};
 
-	const handleWithdrawRequest= async ()=>{
+	const handleWithdrawRequest = async () => {
 		await sendTransaction(
 			contract.methods.withdraw(requestId),
 			setTransactionInProgress
 		);
 		// triggerRefresh();
-	}
+	};
 
+	let voteButton = null;
 	let withdrawFundsButton = null;
 	let updateStrataFeeButton = null;
 	let voteByDate = new Date(parseInt(voteDeadline) * 1000).toDateString();
-    let strataIds = [12,34,56];
-    
+	let strataIds = [12, 34, 56];
+
 	if (isStrataCorporation) {
 		if (requestStatus === "Approved") {
 			// if (requestType === "Expense") {
@@ -87,20 +86,33 @@ const RequestItem = ({
 		} else if (requestStatus === "Pending") {
 			//TODO: We could potentially support having the strata decline a request
 			//if they no longer need it
+			if (isOwner) {
+				voteButton = (
+					<div className={styles.dataField}>
+						<Button onClick={() => setVoteOnRequestOpen(true)}>
+							Vote on Request
+						</Button>
+					</div>
+				);
+			}
+
 			if (requestType === "Strata Fee Change") {
 				updateStrataFeeButton = (
 					<div className={styles.dataField}>
-						<Button onClick={() => handleRefreshStrataFeeChangeRequest()}>Refresh Status</Button>
+						<Button onClick={() => handleRefreshStrataFeeChangeRequest()}>
+							Refresh Status
+						</Button>
 					</div>
 				);
-
 			} else {
 				// expense request
 				withdrawFundsButton = (
 					<div className={styles.dataField}>
-						<Button onClick={() => handleWithdrawRequest()}>Withdraw Funds</Button>
+						<Button onClick={() => handleWithdrawRequest()}>
+							Withdraw Funds
+						</Button>
 					</div>
-				);				
+				);
 			}
 		}
 	}
@@ -130,11 +142,11 @@ const RequestItem = ({
 					<Typography className={styles.label}>Reason:</Typography>
 					<Typography className={styles.value}>{reason}</Typography>
 				</div>
-        <div className={styles.dataField}>
+				<div className={styles.dataField}>
 					<Typography className={styles.label}>Yes Counts:</Typography>
 					<Typography className={styles.value}>{yesCounts}</Typography>
 				</div>
-        <div className={styles.dataField}>
+				<div className={styles.dataField}>
 					<Typography className={styles.label}>No Counts:</Typography>
 					<Typography className={styles.value}>{noCounts}</Typography>
 				</div>
@@ -145,23 +157,18 @@ const RequestItem = ({
 			</CardContent>
 
 			<CardActions disableSpacing className={styles.actions}>
-				{isOwner &&
-					<div className={styles.dataField}>
-						<Button onClick={() => setVoteOnRequestOpen(true)}>
-							Vote on Request
-						</Button>
-					</div>
-				}
+				{voteButton}
+
 				{withdrawFundsButton}
 
 				{updateStrataFeeButton}
 			</CardActions>
 
-            <VoteRequestForm
-                requestId={requestId}
-                isOpen={isVoteOnRequestOpen}
+			<VoteRequestForm
+				requestId={requestId}
+				isOpen={isVoteOnRequestOpen}
 				onClose={() => setVoteOnRequestOpen(false)}
-                strataIds={ownedUnits}
+				strataIds={ownedUnits}
 			/>
 		</Card>
 	);
