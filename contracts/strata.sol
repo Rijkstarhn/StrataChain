@@ -275,52 +275,63 @@ contract Strata {
 
     // withdraw money from expense
     function withdraw(RequestId requestId) public returns (RequestStatus) {
-        RequestStatus status = voteResult(requests[requestId]);
-        if (status == RequestStatus.Approved) {
-            payable(strataAccount).transfer(requests[requestId].amount);
-            status = RequestStatus.Completed;
-            requests[requestId].status = status;
+        RequestItem memory request = requests[requestId];
+
+        require(request.status == RequestStatus.Approved);
+        require(request.requestType == RequestType.Expense);
+        require(address(this).balance >= request.amount);
+        
+        if (request.status == RequestStatus.Approved) {
+            performWithdraw(request);
         }
-        return status;
+        return request.status;
+    }
+
+    function performWithdraw(RequestItem memory request) private {
+        payable(strataAccount).transfer(request.amount);
+        request.status = RequestStatus.Completed;
     }
     // vote
     function voteOnRequest(RequestId requestId, bool supportsRequest, StrataLotId[] calldata strataIds) external returns (RequestStatus) {
         require(owners[msg.sender].ownedUnitsCount > 0);
         // Validate that every passed in lot ID is one that the sender owns. 
         // If it is not we can either reject the entire message or just ignore the ones you don't own
-        RequestItem memory r = requests[requestId];
 
-        uint16 votes ;
-        for (uint i; i < strataIds.length; ++i) {
-            require(units[strataIds[i]].currentOwnership.ownerAccount == msg.sender);
-            // Determine which of the passed in lot IDs has voted on the request
+        RequestItem memory request = requests[requestId];
 
-            if (requestVoters[requestId][strataIds[i]] == false) {
-                ++votes;
-                // Mark the units as voted
-                requestVoters[requestId][strataIds[i]] = true;
+        uint16 voteCount = uint16(strataIds.length);
+        for (uint16 i = 0; i < strataIds.length; ++i) {
+            StrataLotId strataLotId = strataIds[i];
+            if (units[strataLotId].currentOwnership.ownerAccount != msg.sender || requestVoters[requestId][strataLotId]) {
+                --voteCount;
             }
-            
+            else {
+                requestVoters[requestId][strataLotId] = true;
+            }
         }
-        if (supportsRequest){
-            r.approvalVoteCount += votes;
-        } else {
-            r.rejectionVoteCount += votes;
+
+        if (supportsRequest) {
+            request.approvalVoteCount += voteCount;
         }
+        else {
+            request.rejectionVoteCount += voteCount;
+        }
+
         // Update request status
-        RequestStatus status = voteResult(r);
-        r.status = status;
+        RequestStatus status = voteResult(request);
+        request.status = status;
+
+        //If request status became approved, then perform a withdrawal or fee change confirmation
         if (status == RequestStatus.Approved){
-            if (r.requestType == RequestType.Expense && address(this).balance >= r.amount) {
-                payable(strataAccount).transfer(r.amount);
-                r.status = RequestStatus.Completed;
+            if (request.requestType == RequestType.Expense && address(this).balance >= request.amount) {
+                performWithdraw(request);
             }
-            else if (r.requestType == RequestType.FeeChange) {
-                dailyStrataFeePerEntitlement = r.amount;
-                r.status = RequestStatus.Completed;
+            else if (request.requestType == RequestType.FeeChange) {
+                performConfirmStrataFeeChange(request);
             }
         }
-        requests[requestId] = r;
+
+        requests[requestId] = request;
         emit RequestModified(requestId);
         return status;
     }
@@ -430,17 +441,23 @@ contract Strata {
 
     // confirm strata fee change - effective immediately
     function confirmStrataFeeChange(RequestId requestId) public returns (RequestStatus) {
-        RequestStatus status = voteResult(requests[requestId]);
-        if (status == RequestStatus.Approved) {
-            dailyStrataFeePerEntitlement = requests[requestId].amount;
-            status = RequestStatus.Completed;
-            requests[requestId].status = status;
+        RequestItem memory request = requests[requestId];
+
+        require(request.status == RequestStatus.Approved);
+        require(request.requestType == RequestType.FeeChange);
+        
+        if (request.status == RequestStatus.Approved) {
+            performConfirmStrataFeeChange(request);
         }
-        return status;
+        return request.status;
+    }
+
+    function performConfirmStrataFeeChange(RequestItem memory request) private {
+        dailyStrataFeePerEntitlement = request.amount;
+        request.status = RequestStatus.Completed;
     }
 
     function voteResult(RequestItem memory requestItem) private view returns (RequestStatus){
-        // RequestItem memory requestItem = requests[requestId];
         uint majority = uint(strataLotCount >> 1) + 1;
 
         //If more than half of all units approved, so end vote early
