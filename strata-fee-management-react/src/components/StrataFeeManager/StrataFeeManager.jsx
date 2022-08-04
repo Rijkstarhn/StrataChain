@@ -7,11 +7,13 @@ import styles from "./StrataFeeManager.module.css";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
+import Button from "@mui/material/Button";
 
 import StrataCorporation from "../StrataCorporation/StrataCorporation";
 import StrataLot from "../StrataLot/StrataLot";
 import RequestItem from "../RequestItem/RequestItem";
 import contractAddress from "../../contractaddress";
+import ChangeThresholdForm from "../ChangeThresholdForm/ChangeThresholdForm";
 
 export const TriggerRefreshContext = createContext();
 
@@ -48,11 +50,23 @@ const StrataFeeManager = ({ account }) => {
 	const [units, setUnits] = useState({});
 	const [requests, setRequests] = useState({});
 	const [trigger, setTrigger] = useState(false);
+    const [isThresholdFormOpen, setIsThresholdFormOpen] = useState(false);
+    const [isApproval, setIsApproval] = useState(true);
 	// const [totalEntitlement, setTotalEntitlement] = useState(1); // avoid divided by 0 problem, init as 1
 
 	const triggerRefresh = () => {
 		setTrigger(!trigger);
 	};
+
+    const changeApprovalThreshold = () => {
+        setIsApproval(true);
+        setIsThresholdFormOpen(true);
+    }
+
+    const changeRejectionThreshold = () => {
+        setIsApproval(false);
+        setIsThresholdFormOpen(true);
+    }
 
 	useEffect(() => {
 		(async () => {
@@ -213,6 +227,11 @@ const StrataFeeManager = ({ account }) => {
 							{autoApproveThreshold} ETH
 						</Typography>
 					</div>
+                    <div className={styles.dataField}>
+                        <Button onClick={() => changeApprovalThreshold()}>
+                            Change Approval Threshold
+                        </Button>
+					</div>
 					<div className={styles.dataField}>
 						<Typography className={styles.label}>
 							Expense Auto Rejection Threshold:
@@ -221,6 +240,16 @@ const StrataFeeManager = ({ account }) => {
 							{autoRejectThreshold} ETH
 						</Typography>
 					</div>
+                    <div className={styles.dataField}>
+                        <Button onClick={() => changeRejectionThreshold()}>
+                            Change Rejection Threshold
+                        </Button>
+					</div>
+                    <ChangeThresholdForm
+                        isApproval={isApproval}
+						isOpen={isThresholdFormOpen}
+						onClose={() => setIsThresholdFormOpen(false)}
+					/>
 				</div>
 			</Container>
 			<Container disableGutters>
