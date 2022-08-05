@@ -238,13 +238,12 @@ contract Strata {
             status: RequestStatus.Pending,
             approvalVoteCount: 0,
             rejectionVoteCount: 0,
-            voteDeadline: Date.wrap(uint48(block.timestamp) + 7 days)
+            voteDeadline: Date.wrap(uint48(block.timestamp) + 1 minutes)
         });
 
         RequestId requestId = RequestId.wrap(requestCount++);
-        requests[requestId] = requestItem;
 
-        for (uint16 i = 1; i <= strataLotCount; ++i) {
+        for (uint16 i = 0; i < strataLotCount; ++i) {
             StrataLotId strataLotId = StrataLotId.wrap(i);
 
             Owner memory owner = owners[units[strataLotId].currentOwnership.ownerAccount];
@@ -266,6 +265,18 @@ contract Strata {
 
         }
 
+        RequestStatus status = voteResult(requestItem);
+        requestItem.status = status;
+
+        //If request status became approved, then perform a withdrawal or fee change confirmation
+        if (status == RequestStatus.Approved){
+            if (address(this).balance >= requestItem.amount) {
+                performWithdraw(requestItem);
+            }
+        }
+
+        requests[requestId] = requestItem;
+
         // emit Vote event
         emit RequestModified(requestId);
 
@@ -283,6 +294,7 @@ contract Strata {
         
         if (request.status == RequestStatus.Approved) {
             performWithdraw(request);
+            requests[requestId] = request;
         }
         return request.status;
     }
@@ -339,13 +351,13 @@ contract Strata {
 
     function setAutoApproveThreshold(uint256 amount) public {
         verifySenderIsOwner();
-
+        require(amount < owners[msg.sender].autoRejectThreshold);
         owners[msg.sender].autoApproveThreshold = amount;
     }
 
     function setAutoRejectThreshold(uint256 amount) public {
         verifySenderIsOwner();
-
+        require(amount > owners[msg.sender].autoApproveThreshold);
         owners[msg.sender].autoRejectThreshold = amount;
     }
 

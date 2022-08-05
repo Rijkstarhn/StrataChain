@@ -139,6 +139,9 @@ const StrataFeeManager = ({ account }) => {
 						const updatedUnit = await contract.methods
 							.units(strataLotId)
 							.call();
+                        let ethBalance = await web3.eth.getBalance(account); // Get wallet balance
+                        ethBalance = web3.utils.fromWei(ethBalance, "ether"); //Convert balance to wei
+                        setAccountBalance(ethBalance);
 						setUnits((prevUnits) => ({
 							...prevUnits,
 							[strataLotId]: updatedUnit
@@ -155,6 +158,9 @@ const StrataFeeManager = ({ account }) => {
 						const updatedRequest = await contract.methods
 							.requests(requestId)
 							.call();
+                        let ethBalance = await web3.eth.getBalance(account); // Get wallet balance
+                        ethBalance = web3.utils.fromWei(ethBalance, "ether"); //Convert balance to wei
+                        setAccountBalance(ethBalance);
 						setRequests((prevRequests) => ({
 							...prevRequests,
 							[requestId]: updatedRequest
