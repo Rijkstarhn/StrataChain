@@ -110,7 +110,7 @@ contract Strata {
     
     constructor() {
         strataAccount = msg.sender;
-        dailyStrataFeePerEntitlement = 2371163 gwei;
+        dailyStrataFeePerEntitlement = 79039 gwei;
         lastStrataFeeCollectedDate = block.timestamp / 1 days;
         totalEntitlement = 7077;
 
