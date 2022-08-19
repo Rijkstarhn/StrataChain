@@ -71,10 +71,21 @@ contract Strata {
     );
 
     event StrataFeesCollected(
-        uint256 date,
+        Date date,
         uint dayCount
     );
-
+    event UnsettledStrataFee(
+        address owner,
+        StrataLotId strataLotId,
+        Date date,
+        uint256 amount
+    );
+    event StrataFeeRefunded(
+        address owner,
+        StrataLotId strataLotId,
+        Date date,
+        uint256 amount
+    );
     //TODO: Apparently with a mapping, every key-value pair exists with values defaulting to zero-initialized values.
     //Because of this, we need to be careful about what assumptions we are making when we want to check if an
     //item exists in the map. For this, we'd basically need to check some portion of the value struct to see if it is valid or not
@@ -87,7 +98,7 @@ contract Strata {
     address public strataAccount;
     
     uint256 public dailyStrataFeePerEntitlement;
-    uint256 public lastStrataFeeCollectedDate;
+    Date public lastStrataFeeCollectedDate;
 
     mapping(StrataLotId => Unit) public units; 
     mapping(address => Owner) public owners;
@@ -101,7 +112,20 @@ contract Strata {
             strataFeeBalance: 0,
             currentOwnership: Ownership({
                 ownerAccount: ownerAccount,
-                sinceDate: Date.wrap(uint48(block.timestamp)),
+                sinceDate: Date.wrap(uint48(block.timestamp - 365 days)),
+                paidStrataFees: 0,
+                paidExpenses: 0
+            })
+        });
+    }
+    function createUnit(uint16 entitlement, address ownerAccount, Date sinceDate) private
+    {
+        units[StrataLotId.wrap(strataLotCount++)] = Unit({
+            entitlement: entitlement,
+            strataFeeBalance: 0,
+            currentOwnership: Ownership({
+                ownerAccount: ownerAccount,
+                sinceDate: sinceDate,
                 paidStrataFees: 0,
                 paidExpenses: 0
             })
@@ -111,7 +135,7 @@ contract Strata {
     constructor() {
         strataAccount = msg.sender;
         dailyStrataFeePerEntitlement = 79039 gwei;
-        lastStrataFeeCollectedDate = block.timestamp / 1 days;
+        lastStrataFeeCollectedDate = Date.wrap(uint48(block.timestamp / 1 days));
         totalEntitlement = 7077;
 
         requestCount = 0;
@@ -119,7 +143,7 @@ contract Strata {
 
         // initially assume all units are owned by strata corp, call transferOwner to change ownership
 
-        createUnit(93, strataAccount);
+        createUnit(93, strataAccount, Date.wrap(uint48(block.timestamp - 1 days)));
         createUnit(119, strataAccount);
         createUnit(115, strataAccount);
         createUnit(108, strataAccount);
@@ -207,23 +231,19 @@ contract Strata {
 
     function collectStrataFeePayments() public {
         verifySenderIsStrataCorporation();
-        uint256 date = (block.timestamp / 1 days);
-        uint dayCount = (date - lastStrataFeeCollectedDate);
-        uint256 strataFeePerEntitlement =dayCount  * dailyStrataFeePerEntitlement;
-        for (uint16 i = 1; i <= strataLotCount; ++i) {
+        
+        for (uint16 i = 0; i <= strataLotCount; ++i) {
             StrataLotId strataLotId = StrataLotId.wrap(i);
-            
-            uint256 balanceToAdd = units[strataLotId].entitlement * strataFeePerEntitlement;
-            
-            units[strataLotId].strataFeeBalance += int256(balanceToAdd);
+            collectStrataFeePayment(strataLotId);
         }
+        Date date = Date.wrap(uint48(block.timestamp / 1 days));
+        emit StrataFeesCollected(date, Date.unwrap(date) - Date.unwrap(lastStrataFeeCollectedDate));
         lastStrataFeeCollectedDate = date;
-        emit StrataFeesCollected(date, dayCount );
     }
 
     // TODO: this is just for testing
     function setLastStrataFeeCollectedDate(uint8 daysBefore) public {
-       lastStrataFeeCollectedDate =  (block.timestamp / 1 days) - daysBefore;
+       lastStrataFeeCollectedDate = Date.wrap( uint48((block.timestamp / 1 days) - daysBefore));
     }
 
     // request withdrawal - returns the deadline date of vote
@@ -396,16 +416,49 @@ contract Strata {
 
         emit OwnershipTransferred(strataLotId);
     }
+    
+    function collectStrataFeePayment(StrataLotId strataLotId) private returns (int256, address){
+        Unit memory unit = units[strataLotId];
+        Ownership memory ownership = unit.currentOwnership;
+
+        // since owner owns the strata or last date of collection, whichever is later
+        uint dayCount ;
+        uint sinceDate = Date.unwrap(ownership.sinceDate) / 1 days;
+        uint lastCollected = Date.unwrap(lastStrataFeeCollectedDate);
+        if ( sinceDate > lastCollected){
+            dayCount = (block.timestamp / 1 days)- sinceDate;
+        } else {
+            dayCount = (block.timestamp / 1 days)- lastCollected;
+        }
+
+        uint256 balanceToAdd = unit.entitlement * dailyStrataFeePerEntitlement * dayCount;
+            
+        unit.strataFeeBalance += int256(balanceToAdd);
+
+        units[strataLotId] = unit;
+
+        return (unit.strataFeeBalance, ownership.ownerAccount);
+    }
+    
+
+    
+
 
     // refund unused strata fee as of date
     function refundUnusedStrataFee(StrataLotId strataLotId) private {
-        Ownership memory ownership = units[strataLotId].currentOwnership;
-        int256 refundAmount = int256(ownership.paidStrataFees - ownership.paidExpenses);
+        // first collect strata fee up to date
+        int256 finalbalance;
+        address ownerAddr;
+        (finalbalance,  ownerAddr) = collectStrataFeePayment(strataLotId);
 
-        if (refundAmount < 0) {
-            refundAmount = 0;
+        // if there is a balance, refund
+        if (finalbalance < 0) {
+            // refund
+            payable(ownerAddr).transfer(uint256(-finalbalance));
+            emit StrataFeeRefunded(ownerAddr, strataLotId, Date.wrap(uint48(block.timestamp / 1 days)), uint256(-finalbalance));
+        } else if (finalbalance > 0) {
+            emit UnsettledStrataFee(ownerAddr, strataLotId, Date.wrap(uint48(block.timestamp / 1 days)), uint256(finalbalance));
         }
-        payable(ownership.ownerAccount).transfer(uint256(refundAmount));
     }
 
     //Verify that the sender of a message is the strata corporation

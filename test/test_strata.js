@@ -67,8 +67,8 @@ contract("Strata", accounts=>{  // var accounts containing array of testing acco
         await strata.transferOwner(2, accounts[2]);
         await strata.transferOwner(3, accounts[3]);
         let unit1 = await strata.units(1);
-        assert.equal(unit1.entitlement, 100, "incorrect entitlement for lot 1");
-        assert.equal(unit1.currentOwnership.owner.account , accounts[1], 'unit 1 should be transferred to account 1');
+        assert.equal(unit1.entitlement, 119, "incorrect entitlement for lot 1");
+        assert.equal(unit1.currentOwnership.ownerAccount , accounts[1], 'unit 1 should be transferred to account 1');
 
         let status = (await strata.confirmStrataFeeChange.call(requestId)).toNumber();
         assert.equal(status, 2, "status should be zero - Pending");
@@ -117,11 +117,11 @@ contract("Strata 2", accounts =>{
         await strata.transferOwner(2, accounts[2]);
         await strata.transferOwner(3, accounts[3]);
         let unit1 = await strata.units(1);
-        assert.equal(unit1.entitlement, 100, "incorrect entitlement for lot 1");
-        assert.equal(unit1.currentOwnership.owner.account , accounts[1], 'unit 1 should be transferred to account 1');
+        assert.equal(unit1.entitlement, 119, "incorrect entitlement for lot 1");
+        assert.equal(unit1.currentOwnership.ownerAccount , accounts[1], 'unit 1 should be transferred to account 1');
 
         // vote
-        await strata.voteOnRequest(requestId, true, 1, {from: accounts[1]});
+        await strata.voteOnRequest(requestId, true, [1], {from: accounts[1]});
 
         await new Promise((r, v)=>{
             setTimeout(()=>{
@@ -158,12 +158,12 @@ contract("Strata 3", accounts =>{
         await strata.transferOwner(2, accounts[2]);
         await strata.transferOwner(3, accounts[3]);
         let unit1 = await strata.units(1);
-        assert.equal(unit1.entitlement, 100, "incorrect entitlement for lot 1");
-        assert.equal(unit1.currentOwnership.owner.account , accounts[1], 'unit 1 should be transferred to account 1');
+        assert.equal(unit1.entitlement, 119, "incorrect entitlement for lot 1");
+        assert.equal(unit1.currentOwnership.ownerAccount , accounts[1], 'unit 1 should be transferred to account 1');
 
         // vote
-        await strata.voteOnRequest(requestId, false, 1, {from: accounts[1]});
-        await strata.voteOnRequest(requestId, false, 2, {from: accounts[2]});
+        await strata.voteOnRequest(requestId, false, [1], {from: accounts[1]});
+        await strata.voteOnRequest(requestId, false, [2], {from: accounts[2]});
 
         let status = (await strata.confirmStrataFeeChange.call(requestId)).toNumber();
         assert.equal(status, 1, "status should be one [Rejected]");
@@ -199,11 +199,11 @@ contract("Strata 4", accounts =>{
         await strata.transferOwner(2, accounts[2]);
         await strata.transferOwner(3, accounts[3]);
         let unit1 = await strata.units(1);
-        assert.equal(unit1.entitlement, 100, "incorrect entitlement for lot 1");
-        assert.equal(unit1.currentOwnership.owner.account , accounts[1], 'unit 1 should be transferred to account 1');
+        assert.equal(unit1.entitlement, 119, "incorrect entitlement for lot 1");
+        assert.equal(unit1.currentOwnership.ownerAccount , accounts[1], 'unit 1 should be transferred to account 1');
 
         // vote
-        await strata.voteOnRequest(requestId, false, 1, {from: accounts[1]});
+        await strata.voteOnRequest(requestId, false, [1], {from: accounts[1]});
 
         await new Promise((r, v)=>{
             setTimeout(()=>{
